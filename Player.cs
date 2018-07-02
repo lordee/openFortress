@@ -27,9 +27,9 @@ public class Player : KinematicBody
     public float runAcceleration = 14.0f;         // Ground accel
     public float runDeacceleration = 10.0f;       // Deacceleration that occurs when running on the ground
     public float airAcceleration = 2.0f;          // Air accel
-    public float airDecceleration = 2.0f;         // Deacceleration experienced when ooposite strafing
+    public float airDecceleration = 2.0f;         // Deacceleration experienced when opposite strafing
     public float airControl = 0.3f;               // How precise air control is
-    public float sideStrafeAcceleration = 50.0f;  // How fast acceleration occurs to get up to sideStrafeSpeed when
+    public float sideStrafeAcceleration = 50.0f;  // How fast acceleration occurs to get up to sideStrafeSpeed
     public float sideStrafeSpeed = 1.0f;          // What the max speed to generate when side strafing
     public float jumpSpeed = 8.0f;                // The speed at which the character's up axis gains when hitting jump
     public float moveScale = 1.0f;
@@ -117,7 +117,7 @@ public class Player : KinematicBody
     public override void _PhysicsProcess(float delta)
     {
         QueueJump();
-        if (touchingGround)
+        if (touchingGround || climbLadder)
         {
             GroundMove(delta);
         }
@@ -125,6 +125,7 @@ public class Player : KinematicBody
         {
             AirMove(delta);
         }
+        
         playerVelocity = MoveAndSlide(playerVelocity, up);
         touchingGround = IsOnFloor();     
         float speed = playerVelocity.Length();
@@ -301,10 +302,28 @@ public class Player : KinematicBody
         float wishSpeed = wishDir.Length();
         wishSpeed *= moveSpeed;
         Accelerate(wishDir, wishSpeed, runAcceleration, delta);
+       
+        if (climbLadder)
+        {
+            if (_cmd.move_forward != 0f)
+            {
+                playerVelocity.y = moveSpeed * (cameraAngle / 90) * _cmd.move_forward;
+            }
+            else
+            {
+                playerVelocity.y = 0;
+            }
+            if (_cmd.move_right == 0f)
+            {
+                playerVelocity.x = 0;
+                playerVelocity.z = 0;
+            }
+        }
+        else
+        {
+            playerVelocity.y = 0;
+        }
 
-        // Reset the gravity velocity??
-        //playerVelocity.y = -gravity * delta;
-        
         // walk up stairs
         if (wishSpeed > 0 && stairCatcher.IsColliding())
         {
