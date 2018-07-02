@@ -2,65 +2,74 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
+struct Cmd 
+{
+    public float move_forward;
+    public float move_right;
+    public float move_up;
+}
+
 public class Player : KinematicBody
 {
-    // info
-    public int PlayerID;
-    public int Team = 0;
-    public string playerClass = "";
-    bool inMenu = false;
+    float mouseSensitivity = 0.2f;
+    float cameraAngle = 0F;
+    // physics
+    public float gravity = 20.0f;
+    public float friction = 6;
+    public float groundSnapTolerance = 1.0f;
+    private Vector3 up = new Vector3(0,1,0);
+    // stairs
+    float maxStairAngle = 20F;
+    float stairJumpHeight = 9F;
 
-    // move variables
-    float camera_angle = 0F;
-    Vector2 camera_change = new Vector2();
-    float mouse_sensitivity = 0.3F;
-    Vector3 velocity = new Vector3();
-    Vector3 direction = new Vector3();
-    bool climbLadder = false;
-    // bug? on first load, body entered is called
-    bool firstEnter = true;
+    // movement
+    public float moveSpeed = 15.0f;               // Ground move speed
+    public float runAcceleration = 14.0f;         // Ground accel
+    public float runDeacceleration = 10.0f;       // Deacceleration that occurs when running on the ground
+    public float airAcceleration = 2.0f;          // Air accel
+    public float airDecceleration = 2.0f;         // Deacceleration experienced when ooposite strafing
+    public float airControl = 0.3f;               // How precise air control is
+    public float sideStrafeAcceleration = 50.0f;  // How fast acceleration occurs to get up to sideStrafeSpeed when
+    public float sideStrafeSpeed = 1.0f;          // What the max speed to generate when side strafing
+    public float jumpSpeed = 8.0f;                // The speed at which the character's up axis gains when hitting jump
+    public float moveScale = 1.0f;
+   
+    private Vector3 moveDirectionNorm = new Vector3();
+    private Vector3 playerVelocity = new Vector3();
+    
+    // Player commands, stores wish commands that the player asks for (Forward, back, jump, etc)
+    private Cmd _cmd;
 
-    // node references
-    RayCast feet; 
+    // Nodes
     Spatial head;
     Camera camera;
     RayCast stairCatcher;
     Sprite3D muzzleFlash;
-            
-    float gravity = -9.8F * 3;
-    int max_speed = 30;
-    int acceleration = 5;
-    float MAX_SLOPE_ANGLE = 35F;
 
-    // jumping
-    int jump_height = 10;
+    // state
+    bool climbLadder = false;
+    bool firstEnter = true; // bug? on first load, body entered is called
 
-    // stairs
-    float MAX_STAIR_ANGLE = 20F;
-    float STAIR_JUMP_HEIGHT = 9F;
-
-
-    
     // shooting
-    float shoot_range = 1000F;
+    float shootRange = 1000F;
     Vector2 cameraCenter;
-    Vector3 shoot_origin;
-    Vector3 shoot_normal;
-    float shooting = 0F;
+    Vector3 shootOrigin;
+    Vector3 shootNormal;
+    private bool shooting = false;
+
+    // bunnyhopping
+    private bool wishJump = false;
+    private bool touchingGround = false;
+    private float playerTopVelocity = 0.0f;
 
     public override void _Ready()
     {
         // Called every time the node is added to the scene.
         // Initialization here
-        
-        feet = (RayCast)GetNode("Feet");
         head = (Spatial)GetNode("Head");
         camera = (Camera)head.GetNode("Camera");
         stairCatcher = (RayCast)GetNode("StairCatcher");
         muzzleFlash = (Sprite3D)camera.GetNode("MachineGun").GetNode("MuzzleFlash");
-        
-        cameraCenter.x = OS.GetWindowSize().x / 2;
-        cameraCenter.y = OS.GetWindowSize().y / 2;
 
         // enable ladders
         var ladders = GetTree().GetNodesInGroup("Ladders");
@@ -73,40 +82,62 @@ public class Player : KinematicBody
 
     public override void _Input(InputEvent e)
     {
-        if (!inMenu)
+        // moving mouse
+        if (e is InputEventMouseMotion em)
         {
-            if (e is InputEventMouseMotion em)
-            {
-                camera_change = em.Relative;
-            }
-            if (e is InputEventMouseButton emb && e.IsPressed())
-            {
-                shoot_origin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
-                shoot_normal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * shoot_range;
+            if (em.Relative.Length() > 0)
+            {          
+                head.RotateY(Mathf.Deg2Rad(-em.Relative.x * mouseSensitivity));
 
-                // two styles of shooting
-                if (emb.ButtonIndex == 1)
+                // limit how far up/down we look
+                // invert mouse
+                float change = em.Relative.y * mouseSensitivity;
+                if (cameraAngle + change < 90F && cameraAngle + change > -90F)
                 {
-                    shooting = 1;
+                    camera.RotateX(Mathf.Deg2Rad(change));
+                    cameraAngle += change;
                 }
             }
         }
+
+        // shooting
+        if (e is InputEventMouseButton emb && e.IsPressed())
+            {
+                shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
+                shootNormal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * shootRange;
+
+                // TODO change this to a command later
+                if (emb.ButtonIndex == 1)
+                {
+                    shooting = true;
+                }
+            }
     }
+
     public override void _PhysicsProcess(float delta)
     {
-        if (!inMenu)
+        QueueJump();
+        if (touchingGround)
         {
-            Aim();
-            Move(delta);
-            
-            if (shooting > 0)
+            GroundMove(delta);
+        }
+        else
+        {
+            AirMove(delta);
+        }
+        playerVelocity = MoveAndSlide(playerVelocity, up);
+        touchingGround = IsOnFloor();     
+        float speed = playerVelocity.Length();
+        //GD.Print("Speed: " + speed.ToString());
+
+        if (shooting)
             {
                 muzzleFlash.Show();
                 AudioStreamPlayer3D s = (AudioStreamPlayer3D)camera.GetNode("MachineGun").GetNode("Sound");
                 s.Play();
-                PhysicsDirectSpaceState space_state = GetWorld().DirectSpaceState;
+                PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
                 // null should be self?
-                Dictionary<object, object> result = space_state.IntersectRay(shoot_origin, shoot_normal, new object[] { this }, 1);
+                Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
 
                 Vector3 impulse;
                 Vector3 impact_position;
@@ -118,139 +149,252 @@ public class Player : KinematicBody
                     if (result["collider"] is RigidBody c)
                     {
                         Vector3 position = impact_position - c.GlobalTransform.origin;
-                        if (shooting == 1)
-                        {
-                            c.ApplyImpulse(position, impulse * 10);
-                        }
+                        c.ApplyImpulse(position, impulse * 10);
                     }
                 }
                 
-                shooting = 0;
+                shooting = false;
             }
             else
             {
                 muzzleFlash.Hide();
             }
+    }
+
+    private void QueueJump()
+    {
+        if (Input.IsActionJustPressed("jump") && !wishJump)
+        {
+            wishJump = true;
+        }
+        if (Input.IsActionJustReleased("jump"))
+        {
+            wishJump = false;
         }
     }
 
-    public void SetInMenu(bool inmenu)
+    private void SetMovementDir()
     {
-        inMenu = inmenu;
-        if (inmenu)
-        {
-            Input.SetMouseMode(Input.MouseMode.Visible);
-        }
-        else
-        {
-            Input.SetMouseMode(Input.MouseMode.Captured);
-        }
+        _cmd.move_forward = 0f;
+        _cmd.move_right = 0f;
+        _cmd.move_forward += Input.IsActionPressed("move_forward") == true ? 1.0f : 0f;
+        _cmd.move_forward -= Input.IsActionPressed("move_backward") == true ? 1.0f : 0f;
+        _cmd.move_right += Input.IsActionPressed("move_right") == true ? 1.0f : 0f;
+        _cmd.move_right -= Input.IsActionPressed("move_left") == true ? 1.0f : 0f;
     }
-    public void Move(float delta)
-    {
-        // reset the direction of the player
-        direction = new Vector3();
 
-        // get the rotation of the camera
+    private void AirMove(float delta)
+    {
+        Vector3 wishdir = new Vector3();
         Basis aim = camera.GetGlobalTransform().basis;
-                
-        if (Input.IsActionPressed("move_forward"))
-        {
-            direction -= aim.z;
-        }
-        if (Input.IsActionPressed("move_backward"))
-        {
-            direction += aim.z;
-        }
-        if (Input.IsActionPressed("move_left"))
-        {
-            direction -= aim.x;
-        }
-        if (Input.IsActionPressed("move_right"))
-        {
-            direction += aim.x;
-        }
+        float wishvel = airAcceleration;
+        float accel;
         
-        // don't slide down all ramps
-        if (IsOnFloor())
-        {
-            Vector3 n = feet.GetCollisionNormal();
-            float floorAngle = Mathf.Rad2Deg(Mathf.Acos(n.Dot(new Vector3(0,1,0))));
-            if (floorAngle > MAX_SLOPE_ANGLE)
-            {
-                velocity.y += gravity * delta;
-            }
-        }
+        SetMovementDir();
+        float scale = CmdScale();
+
+        wishdir += aim.x * _cmd.move_right;
+        wishdir -= aim.z * _cmd.move_forward;
+
+        float wishspeed = wishdir.Length();
+        wishspeed *= moveSpeed;
+
+        wishdir = wishdir.Normalized();
+        moveDirectionNorm = wishdir;
+        //wishspeed *= scale;
+
+        // CPM: Aircontrol
+        float wishspeed2 = wishspeed;
+        if (playerVelocity.Dot(wishdir) < 0)
+            accel = airDecceleration;
         else
+            accel = airAcceleration;
+        // If the player is ONLY strafing left or right
+        if(_cmd.move_forward == 0 && _cmd.move_right != 0)
         {
-            // in the air, apply gravity
-            velocity.y += gravity * delta;
+            if(wishspeed > sideStrafeSpeed)
+            {
+                wishspeed = sideStrafeSpeed;
+            }
+                
+            accel = sideStrafeAcceleration;
         }
-      
-        Vector3 temp_velocity = velocity;
-        // if they're not climbing a ladder, then they walk on the floor, not upwards
+
+        Accelerate(wishdir, wishspeed, accel, delta);
+        if(airControl > 0)
+        {
+            AirControl(wishdir, wishspeed2, delta);
+        }
+        // !CPM: Aircontrol
+
+        // Apply gravity
         if (!climbLadder)
         {
-            direction.y = 0;           
-            temp_velocity.y = 0;
+            playerVelocity.y -= gravity * delta;
         }
-        direction = direction.Normalized();
+    }
+
+    /**
+     * Air control occurs when the player is in the air, it allows
+     * players to move side to side much faster rather than being
+     * 'sluggish' when it comes to cornering.
+     */
+    private void AirControl(Vector3 wishdir, float wishspeed, float delta)
+    {
+        float zspeed;
+        float speed;
+        float dot;
+        float k;
+
+        // Can't control movement if not moving forward or backward
+        if(Mathf.Abs(_cmd.move_forward) < 0.001 || Mathf.Abs(wishspeed) < 0.001)
+            return;
+        zspeed = playerVelocity.y;
+        playerVelocity.y = 0;
+        // Next two lines are equivalent to idTech's VectorNormalize()
+        speed = playerVelocity.Length();
+        playerVelocity = playerVelocity.Normalized();
+
+        dot = playerVelocity.Dot(wishdir);
+        k = 32;
+        k *= airControl * dot * dot * delta;
+
+        // Change direction while slowing down
+        if (dot > 0)
+        {
+            playerVelocity.x = playerVelocity.x * speed + wishdir.x * k;
+            playerVelocity.y = playerVelocity.y * speed + wishdir.y * k;
+            playerVelocity.z = playerVelocity.z * speed + wishdir.z * k;
+
+            playerVelocity = playerVelocity.Normalized();
+            moveDirectionNorm = playerVelocity;
+        }
+
+        playerVelocity.x *= speed;
+        playerVelocity.y = zspeed; // Note this line
+        playerVelocity.z *= speed;
+    }
+
+    private void GroundMove(float delta)
+    {
+        Vector3 wishDir = new Vector3();
+        Basis aim = camera.GetGlobalTransform().basis;
+
+        // Do not apply friction if the player is queueing up the next jump
+        if (!wishJump)
+        {
+            ApplyFriction(1.0f, delta);
+        }
+        else
+        {
+            ApplyFriction(0, delta);
+        }
+
+        SetMovementDir();
+        float scale = CmdScale();
+
+        wishDir += aim.x * _cmd.move_right;
+        wishDir -= aim.z * _cmd.move_forward;
+        wishDir = wishDir.Normalized();
+        moveDirectionNorm = wishDir;
+
+        float wishSpeed = wishDir.Length();
+        wishSpeed *= moveSpeed;
+        Accelerate(wishDir, wishSpeed, runAcceleration, delta);
+
+        // Reset the gravity velocity??
+        //playerVelocity.y = -gravity * delta;
         
-        // walk stairs
-        if (direction.Length() > 0 && stairCatcher.IsColliding())
+        // walk up stairs
+        if (wishSpeed > 0 && stairCatcher.IsColliding())
         {
             Vector3 col = stairCatcher.GetCollisionNormal();
             float ang = Mathf.Rad2Deg(Mathf.Acos(col.Dot(new Vector3(0,1,0))));
-            if (ang < MAX_STAIR_ANGLE)
+            if (ang < maxStairAngle)
             {
-                velocity.y = STAIR_JUMP_HEIGHT;
+                playerVelocity.y = stairJumpHeight;
             }
         }
 
-        // where would the player go at max speed
-        Vector3 target = direction * max_speed;
-
-        // calculate a portion of the distance to go
-        temp_velocity = temp_velocity.LinearInterpolate(target, acceleration * delta);
-        velocity.x = temp_velocity.x;
-        velocity.z = temp_velocity.z;
-        
-        // move
-        if (climbLadder)
+        if (wishJump)
         {
-            velocity.y = temp_velocity.y;
-            velocity = MoveAndSlide(velocity);
+            playerVelocity.y = jumpSpeed;
+            wishJump = false;
         }
-        else
-        {
-            velocity = MoveAndSlide(velocity, new Vector3(0,1,0));
-        }
-        
-        // jump
-        if (IsOnFloor() && Input.IsActionJustPressed("jump"))
-        {
-            velocity.y = jump_height;
-        }
-
-        // make sure staircatcher always in direction walking
-        stairCatcher.SetTranslation(new Vector3(direction.x, stairCatcher.Translation.y, direction.z));
     }
-    public void Aim()
-    {
-        if (camera_change.Length() > 0)
-        {          
-            head.RotateY(Mathf.Deg2Rad(-camera_change.x * mouse_sensitivity));
 
-            // limit how far up/down we look
-            float change = -camera_change.y * mouse_sensitivity;
-            if (camera_angle + change < 90F && camera_angle + change > -90F)
-            {
-                // invert mouse
-                camera.RotateX(Mathf.Deg2Rad(-change));
-                camera_angle += change;
-                camera_change = new Vector2();
-            }
+    private void ApplyFriction(float t, float delta)
+    {
+        Vector3 vec = playerVelocity;
+        float speed;
+        float newspeed;
+        float control;
+        float drop;
+
+        vec.y = 0.0f;
+        speed = vec.Length();
+        drop = 0.0f;
+
+        // Only if the player is on the ground then apply friction
+        if (touchingGround)
+        {
+            control = speed < runDeacceleration ? runDeacceleration : speed;
+            drop = control * friction * delta * t;
         }
+
+        newspeed = speed - drop;
+        if(newspeed < 0)
+            newspeed = 0;
+        if(speed > 0)
+            newspeed /= speed;
+
+        playerVelocity.x *= newspeed;
+        playerVelocity.z *= newspeed;
+    }
+
+    private void Accelerate(Vector3 wishdir, float wishspeed, float accel, float delta)
+    {
+        float addspeed;
+        float accelspeed;
+        float currentspeed;
+        
+        currentspeed = playerVelocity.Dot(wishdir);
+        addspeed = wishspeed - currentspeed;
+        if(addspeed <= 0)
+            return;
+        accelspeed = accel * delta * wishspeed;
+        //if(accelspeed > addspeed)
+         //   accelspeed = addspeed;
+        playerVelocity.x += accelspeed * wishdir.x;
+        playerVelocity.z += accelspeed * wishdir.z;
+
+        // implement climbladder?
+    }
+
+    /*
+    ============
+    PM_CmdScale
+    Returns the scale factor to apply to cmd movements
+    This allows the clients to use axial -127 to 127 values for all directions
+    without getting a sqrt(2) distortion in speed.
+    ============
+    */
+     private float CmdScale()
+    {
+        int max;
+        float total;
+        float scale;
+
+        max = (int)Mathf.Abs(_cmd.move_forward);
+        if(Mathf.Abs(_cmd.move_right) > max)
+            max = (int)Mathf.Abs(_cmd.move_right);
+        if(max <= 0)
+            return 0;
+
+        total = Mathf.Sqrt(_cmd.move_forward * _cmd.move_forward + _cmd.move_right * _cmd.move_right);
+        scale = moveSpeed * max / (moveScale * total);
+
+        return scale;
     }
 
     // ladder
