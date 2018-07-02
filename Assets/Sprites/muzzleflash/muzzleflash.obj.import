@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/muzzleflash.obj-e657fed98f449e87fc9f76c8724e0451.mesh"
+
+[deps]
+
+files=[ "res://.import/muzzleflash.obj-e657fed98f449e87fc9f76c8724e0451.mesh" ]
+
+source_file="res://Assets/Sprites/muzzleflash/muzzleflash.obj"
+dest_files=[ "res://.import/muzzleflash.obj-e657fed98f449e87fc9f76c8724e0451.mesh", "res://.import/muzzleflash.obj-e657fed98f449e87fc9f76c8724e0451.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )

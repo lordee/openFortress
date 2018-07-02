@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/sniper.obj-0392bf7853d03e5f13a36aa5affc9526.mesh"
+
+[deps]
+
+files=[ "res://.import/sniper.obj-0392bf7853d03e5f13a36aa5affc9526.mesh" ]
+
+source_file="res://Assets/Models/Guns/sniper.obj"
+dest_files=[ "res://.import/sniper.obj-0392bf7853d03e5f13a36aa5affc9526.mesh", "res://.import/sniper.obj-0392bf7853d03e5f13a36aa5affc9526.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )

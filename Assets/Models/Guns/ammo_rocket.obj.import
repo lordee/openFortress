@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/ammo_rocket.obj-3b9d7ecd92c0ca2fac6b8245b92556ba.mesh"
+
+[deps]
+
+files=[ "res://.import/ammo_rocket.obj-3b9d7ecd92c0ca2fac6b8245b92556ba.mesh" ]
+
+source_file="res://Assets/Models/Guns/ammo_rocket.obj"
+dest_files=[ "res://.import/ammo_rocket.obj-3b9d7ecd92c0ca2fac6b8245b92556ba.mesh", "res://.import/ammo_rocket.obj-3b9d7ecd92c0ca2fac6b8245b92556ba.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )

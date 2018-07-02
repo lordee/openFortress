@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/flamethrowerHandle.obj-a850157b2481453d405f7db20b9d0a73.mesh"
+
+[deps]
+
+files=[ "res://.import/flamethrowerHandle.obj-a850157b2481453d405f7db20b9d0a73.mesh" ]
+
+source_file="res://Assets/Models/Guns/flamethrowerHandle.obj"
+dest_files=[ "res://.import/flamethrowerHandle.obj-a850157b2481453d405f7db20b9d0a73.mesh", "res://.import/flamethrowerHandle.obj-a850157b2481453d405f7db20b9d0a73.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )

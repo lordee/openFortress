@@ -1,0 +1,6 @@
+/home/danni/Code/Godot Projects/openFortress/.mono/temp/bin/Tools/openFortres.dll
+/home/danni/Code/Godot Projects/openFortress/.mono/temp/bin/Tools/openFortres.pdb
+/home/danni/Code/Godot Projects/openFortress/.mono/temp/obj/Tools/openFortres.csprojResolveAssemblyReference.cache
+/home/danni/Code/Godot Projects/openFortress/.mono/temp/obj/Tools/openFortres.csproj.CoreCompileInputs.cache
+/home/danni/Code/Godot Projects/openFortress/.mono/temp/obj/Tools/openFortres.dll
+/home/danni/Code/Godot Projects/openFortress/.mono/temp/obj/Tools/openFortres.pdb

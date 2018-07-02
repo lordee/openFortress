@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/uziLongSilencer.obj-cc380cc96019ef6b650dd91da1890066.mesh"
+
+[deps]
+
+files=[ "res://.import/uziLongSilencer.obj-cc380cc96019ef6b650dd91da1890066.mesh" ]
+
+source_file="res://Assets/Models/Guns/uziLongSilencer.obj"
+dest_files=[ "res://.import/uziLongSilencer.obj-cc380cc96019ef6b650dd91da1890066.mesh", "res://.import/uziLongSilencer.obj-cc380cc96019ef6b650dd91da1890066.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )
