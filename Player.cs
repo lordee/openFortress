@@ -9,6 +9,19 @@ struct Cmd
     public float move_up;
 }
 
+enum TFClass {
+    Scout,
+    Sniper,
+    Soldier,
+    Demoman,
+    Medic,
+    HWGuy,
+    Pyro,
+    Spy,
+    Engineer,
+    Observer
+}
+
 public class Player : KinematicBody
 {
     float mouseSensitivity = 0.2f;
@@ -45,8 +58,72 @@ public class Player : KinematicBody
     Camera camera;
     RayCast stairCatcher;
     Sprite3D muzzleFlash;
+    private Main _main;
+    private Main Main {
+        get {
+            if (_main == null)
+            {
+                _main = (Main)GetNode("/root/Main");
+            }
+            return _main;
+        }
+    }
 
     // state
+    private int _teamID = 9;
+    public int TeamID { 
+        get {
+            return _teamID;
+        }
+        set {
+            Class = "Observer";
+            _teamID = value;
+
+            this.Spawn(Main.GetNextSpawn(value));
+        }
+    }
+    private TFClass _class = TFClass.Observer;
+    public string Class {
+        get {
+            return _class.ToString();
+        }
+        set {
+            switch (value)
+            {
+                case "Scout":
+                    _class = TFClass.Scout;
+                break;
+                case "Sniper":
+                    _class = TFClass.Sniper;
+                break;
+                case "Soldier":
+                    _class = TFClass.Soldier;
+                break;
+                case "Demoman":
+                    _class = TFClass.Demoman;
+                break;
+                case "Medic":
+                    _class = TFClass.Medic;
+                break;
+                case "HWGuy":
+                    _class = TFClass.HWGuy;
+                break;
+                case "Pyro":
+                    _class = TFClass.Pyro;
+                break;
+                case "Spy":
+                    _class = TFClass.Spy;
+                break;
+                case "Engineer":
+                    _class = TFClass.Engineer;
+                break;
+                default:
+                    _class = TFClass.Observer;
+                break;
+            }
+        }
+    }
+        
     bool climbLadder = false;
     bool firstEnter = true; // bug? on first load, body entered is called
 
@@ -83,25 +160,27 @@ public class Player : KinematicBody
     public override void _Input(InputEvent e)
     {
         // moving mouse
-        if (e is InputEventMouseMotion em)
+        if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
-            if (em.Relative.Length() > 0)
-            {          
-                head.RotateY(Mathf.Deg2Rad(-em.Relative.x * mouseSensitivity));
+            if (e is InputEventMouseMotion em)
+            {
+                if (em.Relative.Length() > 0)
+                {          
+                    head.RotateY(Mathf.Deg2Rad(-em.Relative.x * mouseSensitivity));
 
-                // limit how far up/down we look
-                // invert mouse
-                float change = em.Relative.y * mouseSensitivity;
-                if (cameraAngle + change < 90F && cameraAngle + change > -90F)
-                {
-                    camera.RotateX(Mathf.Deg2Rad(change));
-                    cameraAngle += change;
+                    // limit how far up/down we look
+                    // invert mouse
+                    float change = em.Relative.y * mouseSensitivity;
+                    if (cameraAngle + change < 90F && cameraAngle + change > -90F)
+                    {
+                        camera.RotateX(Mathf.Deg2Rad(change));
+                        cameraAngle += change;
+                    }
                 }
             }
-        }
 
-        // shooting
-        if (e is InputEventMouseButton emb && e.IsPressed())
+            // shooting
+            if (e is InputEventMouseButton emb && e.IsPressed())
             {
                 shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
                 shootNormal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * shootRange;
@@ -112,6 +191,8 @@ public class Player : KinematicBody
                     shooting = true;
                 }
             }
+        }
+        
     }
 
     public override void _PhysicsProcess(float delta)
@@ -160,6 +241,12 @@ public class Player : KinematicBody
             {
                 muzzleFlash.Hide();
             }
+    }
+
+    public void Spawn(Vector3 loc)
+    {
+        this.SetTranslation(loc);
+        // do other stuff around being dead etc until class selected
     }
 
     private void QueueJump()
@@ -417,7 +504,7 @@ public class Player : KinematicBody
     }
 
     // ladder
-    public void _on_Ladder_body_entered(Player body)
+    private void _on_Ladder_body_entered(Player body)
     {
         climbLadder = true;
         // bug? on first load, body entered is called
@@ -428,7 +515,7 @@ public class Player : KinematicBody
         }
     }
     // ladder
-    public void _on_Ladder_body_exited(Player body)
+    private void _on_Ladder_body_exited(Player body)
     {
         climbLadder = false;
     }
