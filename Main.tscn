@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=2]
+[gd_scene load_steps=31 format=2]
 
 [ext_resource path="res://Main.cs" type="Script" id=1]
 [ext_resource path="res://noon_grass_2k.hdr" type="Texture" id=2]
@@ -11,6 +11,7 @@
 [ext_resource path="res://Assets/Sprites/Crosshair 1.png" type="Texture" id=9]
 [ext_resource path="res://cube.tscn" type="PackedScene" id=10]
 [ext_resource path="res://Player.tscn" type="PackedScene" id=11]
+[ext_resource path="res://UI.tscn" type="PackedScene" id=12]
 
 [sub_resource type="PanoramaSky" id=1]
 
@@ -543,7 +544,7 @@ constant_angular_velocity = Vector3( 0, 0, 0 )
 shape = SubResource( 18 )
 disabled = false
 
-[node name="Control" type="Control" parent="." index="8"]
+[node name="CrosshairControl" type="Control" parent="." index="8"]
 
 anchor_left = 0.5
 anchor_top = 0.5
@@ -557,7 +558,7 @@ size_flags_horizontal = 1
 size_flags_vertical = 1
 _sections_unfolded = [ "Margin" ]
 
-[node name="Sprite" type="Sprite" parent="Control" index="0"]
+[node name="Crosshair" type="Sprite" parent="CrosshairControl" index="0"]
 
 scale = Vector2( 0.1, 0.1 )
 texture = ExtResource( 9 )
@@ -584,5 +585,7 @@ _sections_unfolded = [ "Transform" ]
 [node name="Player" parent="." index="12" instance=ExtResource( 11 )]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00279689, 14.4915, 3.9969 )
+
+[node name="UI" parent="." index="13" instance=ExtResource( 12 )]
 
 

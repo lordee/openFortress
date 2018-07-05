@@ -57,8 +57,9 @@ public class Main : Node
                 break;
                 case 9:
                     // nothing for now, just break
+                    
                 break;
             }
-            return spawn.GetTranslation();
+            return teamID == 9 ? new Vector3(0,10,0) : spawn.GetTranslation();
     }
 }

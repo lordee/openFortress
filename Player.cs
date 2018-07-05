@@ -58,6 +58,9 @@ public class Player : KinematicBody
     Camera camera;
     RayCast stairCatcher;
     Sprite3D muzzleFlash;
+    Label HealthLabel;
+    Label ArmourLabel;
+
     private Main _main;
     private Main Main {
         get {
@@ -88,39 +91,99 @@ public class Player : KinematicBody
             return _class.ToString();
         }
         set {
+            // probably shouldn't use an enum
             switch (value)
             {
                 case "Scout":
                     _class = TFClass.Scout;
+                    this.Health = Scout.Health;
+                    this.Armour = Scout.Armour;
                 break;
                 case "Sniper":
                     _class = TFClass.Sniper;
+                    this.Health = Sniper.Health;
+                    this.Armour = Sniper.Armour;
                 break;
                 case "Soldier":
                     _class = TFClass.Soldier;
+                    this.Health = Soldier.Health;
+                    this.Armour = Soldier.Armour;
                 break;
                 case "Demoman":
                     _class = TFClass.Demoman;
+                    this.Health = Demoman.Health;
+                    this.Armour = Demoman.Armour;
                 break;
                 case "Medic":
                     _class = TFClass.Medic;
+                    this.Health = Medic.Health;
+                    this.Armour = Medic.Armour;
                 break;
                 case "HWGuy":
                     _class = TFClass.HWGuy;
+                    this.Health = HWGuy.Health;
+                    this.Armour = HWGuy.Armour;
                 break;
                 case "Pyro":
                     _class = TFClass.Pyro;
+                    this.Health = Pyro.Health;
+                    this.Armour = Pyro.Armour;
                 break;
                 case "Spy":
                     _class = TFClass.Spy;
+                    this.Health = Spy.Health;
+                    this.Armour = Spy.Armour;
                 break;
                 case "Engineer":
                     _class = TFClass.Engineer;
+                    this.Health = Engineer.Health;
+                    this.Armour = Engineer.Armour;
                 break;
                 default:
                     _class = TFClass.Observer;
+                    this.Health = 0;
+                    this.Armour = 0;
                 break;
             }
+            // respawn instantly on class change
+            this.Spawn(Main.GetNextSpawn(this.TeamID));
+        }
+    }
+    private int _armour;
+    public int Armour {
+        get; set;
+    }
+    private int _currentArmour;
+    public int CurrentArmour 
+    {
+        get {
+            return _currentArmour;
+        }
+        set {
+            _currentArmour = value;
+            ArmourLabel.Text = value.ToString();
+        }
+    }
+
+    private int _health;
+    public int Health 
+    {
+        get {
+            return _health;
+        }
+        set {
+            _health = value;
+        }
+    }
+    private int _currentHealth;
+    public int CurrentHealth 
+    {
+        get {
+            return _currentHealth;
+        }
+        set {
+            _currentHealth = value;
+            HealthLabel.Text = value.ToString();
         }
     }
         
@@ -147,7 +210,8 @@ public class Player : KinematicBody
         camera = (Camera)head.GetNode("Camera");
         stairCatcher = (RayCast)GetNode("StairCatcher");
         muzzleFlash = (Sprite3D)camera.GetNode("MachineGun").GetNode("MuzzleFlash");
-
+        HealthLabel = (Label)GetNode("/root/Main/UI/HealthLabel");
+        ArmourLabel = (Label)GetNode("/root/Main/UI/ArmourLabel");
         // enable ladders
         var ladders = GetTree().GetNodesInGroup("Ladders");
         foreach (Area l in ladders)
@@ -197,56 +261,61 @@ public class Player : KinematicBody
 
     public override void _PhysicsProcess(float delta)
     {
-        QueueJump();
-        if (touchingGround || climbLadder)
+        if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
-            GroundMove(delta);
-        }
-        else
-        {
-            AirMove(delta);
-        }
-        
-        playerVelocity = MoveAndSlide(playerVelocity, up);
-        touchingGround = IsOnFloor();     
-        float speed = playerVelocity.Length();
-        //GD.Print("Speed: " + speed.ToString());
-
-        if (shooting)
+            QueueJump();
+            if (touchingGround || climbLadder)
             {
-                muzzleFlash.Show();
-                AudioStreamPlayer3D s = (AudioStreamPlayer3D)camera.GetNode("MachineGun").GetNode("Sound");
-                s.Play();
-                PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
-                // null should be self?
-                Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
-
-                Vector3 impulse;
-                Vector3 impact_position;
-                if (result.Count > 0)
-                {
-                    impact_position = (Vector3)result["position"];
-                    impulse = (impact_position - (Vector3)GlobalTransform.origin).Normalized();
-                    
-                    if (result["collider"] is RigidBody c)
-                    {
-                        Vector3 position = impact_position - c.GlobalTransform.origin;
-                        c.ApplyImpulse(position, impulse * 10);
-                    }
-                }
-                
-                shooting = false;
+                GroundMove(delta);
             }
             else
             {
-                muzzleFlash.Hide();
+                AirMove(delta);
             }
+            
+            playerVelocity = MoveAndSlide(playerVelocity, up);
+            touchingGround = IsOnFloor();     
+            float speed = playerVelocity.Length();
+            //GD.Print("Speed: " + speed.ToString());
+
+            if (shooting)
+                {
+                    muzzleFlash.Show();
+                    AudioStreamPlayer3D s = (AudioStreamPlayer3D)camera.GetNode("MachineGun").GetNode("Sound");
+                    s.Play();
+                    PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
+                    // null should be self?
+                    Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
+
+                    Vector3 impulse;
+                    Vector3 impact_position;
+                    if (result.Count > 0)
+                    {
+                        impact_position = (Vector3)result["position"];
+                        impulse = (impact_position - (Vector3)GlobalTransform.origin).Normalized();
+                        
+                        if (result["collider"] is RigidBody c)
+                        {
+                            Vector3 position = impact_position - c.GlobalTransform.origin;
+                            c.ApplyImpulse(position, impulse * 10);
+                        }
+                    }
+                    
+                    shooting = false;
+                }
+                else
+                {
+                    muzzleFlash.Hide();
+                }
+        }
     }
 
     public void Spawn(Vector3 loc)
     {
         this.SetTranslation(loc);
-        // do other stuff around being dead etc until class selected
+        // do other stuff around being dead etc 
+        this.CurrentHealth = this.Health;
+        this.CurrentArmour = this.Armour / 2;
     }
 
     private void QueueJump()
