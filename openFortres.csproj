@@ -55,6 +55,8 @@
     <Compile Include="Classes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TeamMenu.cs" />
+    <Compile Include="Weapons.cs" />
+    <Compile Include="Ammunition.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

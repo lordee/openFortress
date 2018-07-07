@@ -9,19 +9,6 @@ struct Cmd
     public float move_up;
 }
 
-enum TFClass {
-    Scout,
-    Sniper,
-    Soldier,
-    Demoman,
-    Medic,
-    HWGuy,
-    Pyro,
-    Spy,
-    Engineer,
-    Observer
-}
-
 public class Player : KinematicBody
 {
     float mouseSensitivity = 0.2f;
@@ -79,79 +66,22 @@ public class Player : KinematicBody
             return _teamID;
         }
         set {
-            Class = "Observer";
+            Class = new Observer();
             _teamID = value;
 
             this.Spawn(Main.GetNextSpawn(value));
         }
     }
-    private TFClass _class = TFClass.Observer;
-    public string Class {
+    private TFClass _class = new Observer();
+    public TFClass Class {
         get {
-            return _class.ToString();
+            return _class;
         }
         set {
-            // probably shouldn't use an enum
-            switch (value)
-            {
-                case "Scout":
-                    _class = TFClass.Scout;
-                    this.Health = Scout.Health;
-                    this.Armour = Scout.Armour;
-                break;
-                case "Sniper":
-                    _class = TFClass.Sniper;
-                    this.Health = Sniper.Health;
-                    this.Armour = Sniper.Armour;
-                break;
-                case "Soldier":
-                    _class = TFClass.Soldier;
-                    this.Health = Soldier.Health;
-                    this.Armour = Soldier.Armour;
-                break;
-                case "Demoman":
-                    _class = TFClass.Demoman;
-                    this.Health = Demoman.Health;
-                    this.Armour = Demoman.Armour;
-                break;
-                case "Medic":
-                    _class = TFClass.Medic;
-                    this.Health = Medic.Health;
-                    this.Armour = Medic.Armour;
-                break;
-                case "HWGuy":
-                    _class = TFClass.HWGuy;
-                    this.Health = HWGuy.Health;
-                    this.Armour = HWGuy.Armour;
-                break;
-                case "Pyro":
-                    _class = TFClass.Pyro;
-                    this.Health = Pyro.Health;
-                    this.Armour = Pyro.Armour;
-                break;
-                case "Spy":
-                    _class = TFClass.Spy;
-                    this.Health = Spy.Health;
-                    this.Armour = Spy.Armour;
-                break;
-                case "Engineer":
-                    _class = TFClass.Engineer;
-                    this.Health = Engineer.Health;
-                    this.Armour = Engineer.Armour;
-                break;
-                default:
-                    _class = TFClass.Observer;
-                    this.Health = 0;
-                    this.Armour = 0;
-                break;
-            }
+            _class = value;
             // respawn instantly on class change
             this.Spawn(Main.GetNextSpawn(this.TeamID));
         }
-    }
-    private int _armour;
-    public int Armour {
-        get; set;
     }
     private int _currentArmour;
     public int CurrentArmour 
@@ -165,16 +95,6 @@ public class Player : KinematicBody
         }
     }
 
-    private int _health;
-    public int Health 
-    {
-        get {
-            return _health;
-        }
-        set {
-            _health = value;
-        }
-    }
     private int _currentHealth;
     public int CurrentHealth 
     {
@@ -185,6 +105,12 @@ public class Player : KinematicBody
             _currentHealth = value;
             HealthLabel.Text = value.ToString();
         }
+    }
+    
+    private Weapon _activeWeapon;
+    public Weapon ActiveWeapon
+    {
+        get; set;
     }
         
     bool climbLadder = false;
@@ -255,8 +181,12 @@ public class Player : KinematicBody
                     shooting = true;
                 }
             }
+
+            /*if (Input.IsActionJustPressed("slot1")) 
+            {
+                ActiveWeapon = this.Class.Weapon1;
+            }*/
         }
-        
     }
 
     public override void _PhysicsProcess(float delta)
@@ -314,8 +244,10 @@ public class Player : KinematicBody
     {
         this.SetTranslation(loc);
         // do other stuff around being dead etc 
-        this.CurrentHealth = this.Health;
-        this.CurrentArmour = this.Armour / 2;
+        
+        GD.Print(this.Class.ToString());
+        this.CurrentHealth = this.Class.Health;
+        this.CurrentArmour = this.Class.Armour / 2;
     }
 
     private void QueueJump()
