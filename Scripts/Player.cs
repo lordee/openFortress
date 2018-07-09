@@ -79,6 +79,7 @@ public class Player : KinematicBody
         }
         set {
             _class = value;
+            _class.SpawnWeapons(this.camera);
             // respawn instantly on class change
             this.Spawn(Main.GetNextSpawn(this.TeamID));
         }
@@ -106,11 +107,53 @@ public class Player : KinematicBody
             HealthLabel.Text = value.ToString();
         }
     }
+
+    private int _currentShells = 0;
+    private int _currentNails = 0;
+    private int _currentRockets = 0;
+    private int _currentCells = 0;
     
     private Weapon _activeWeapon;
     public Weapon ActiveWeapon
     {
-        get; set;
+        get {
+            return _activeWeapon;
+        }
+        set {
+            if (value != null) 
+            {
+                // if player has min amount of ammunition required
+                int ammoReq = value.MinAmmoRequired;
+                int ammoQty = 0;
+                switch (value.AmmoType)
+                {
+                    case Ammunition.Shells:
+                        ammoQty = this._currentShells;
+                    break;
+                    case Ammunition.Nails:
+                        ammoQty = this._currentNails;
+                    break;
+                    case Ammunition.Rockets:
+                        ammoQty = this._currentRockets;
+                    break;
+                    case Ammunition.Cells:
+                        ammoQty = this._currentCells;
+                    break;
+                }
+
+                if (ammoQty >= ammoReq)
+                {
+                    // hide current activeweapon
+                    _activeWeapon.Visible = false;
+
+                    // set active weapon
+                    _activeWeapon = value;
+
+                    // make active weapon visible
+                    _activeWeapon.Visible = true;
+                }
+            }
+        }
     }
         
     bool climbLadder = false;
@@ -182,10 +225,22 @@ public class Player : KinematicBody
                 }
             }
 
-            /*if (Input.IsActionJustPressed("slot1")) 
+            if (Input.IsActionJustPressed("slot1")) 
             {
                 ActiveWeapon = this.Class.Weapon1;
-            }*/
+            } 
+            else if (Input.IsActionJustPressed("slot2"))
+            {
+                ActiveWeapon = this.Class.Weapon2;
+            }
+            else if (Input.IsActionJustPressed("slot3"))
+            {
+                ActiveWeapon = this.Class.Weapon3;
+            }
+            else if (Input.IsActionJustPressed("slot4"))
+            {
+                ActiveWeapon = this.Class.Weapon4;
+            }
         }
     }
 
@@ -208,35 +263,36 @@ public class Player : KinematicBody
             float speed = playerVelocity.Length();
             //GD.Print("Speed: " + speed.ToString());
 
-            if (shooting)
-                {
-                    muzzleFlash.Show();
-                    AudioStreamPlayer3D s = (AudioStreamPlayer3D)camera.GetNode("MachineGun").GetNode("Sound");
-                    s.Play();
-                    PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
-                    // null should be self?
-                    Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
+            /*if (shooting)
+            {
+                muzzleFlash.Show();
+                AudioStreamPlayer3D s = (AudioStreamPlayer3D)camera.GetNode("MachineGun").GetNode("Sound");
+                s.Play();
+                PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
+                // null should be self?
+                Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
 
-                    Vector3 impulse;
-                    Vector3 impact_position;
-                    if (result.Count > 0)
-                    {
-                        impact_position = (Vector3)result["position"];
-                        impulse = (impact_position - (Vector3)GlobalTransform.origin).Normalized();
-                        
-                        if (result["collider"] is RigidBody c)
-                        {
-                            Vector3 position = impact_position - c.GlobalTransform.origin;
-                            c.ApplyImpulse(position, impulse * 10);
-                        }
-                    }
-                    
-                    shooting = false;
-                }
-                else
+                Vector3 impulse;
+                Vector3 impact_position;
+                if (result.Count > 0)
                 {
-                    muzzleFlash.Hide();
+                    impact_position = (Vector3)result["position"];
+                    impulse = (impact_position - (Vector3)GlobalTransform.origin).Normalized();
+                    
+                    if (result["collider"] is RigidBody c)
+                    {
+                        Vector3 position = impact_position - c.GlobalTransform.origin;
+                        c.ApplyImpulse(position, impulse * 10);
+                    }
                 }
+                
+                shooting = false;
+            }
+            else
+            {
+                muzzleFlash.Hide();
+            }
+                */
         }
     }
 

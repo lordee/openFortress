@@ -19,8 +19,6 @@ public class Main : Node
 
     public override void _Process(float delta)
     {
-        // Called every frame. Delta is time since last frame.
-        // Update game logic here.
         if (Input.IsActionJustPressed("ui_cancel"))
         {
             Input.SetMouseMode(Input.MouseMode.Visible);

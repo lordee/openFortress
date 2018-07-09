@@ -49,14 +49,14 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClassMenu.cs" />
-    <Compile Include="Main.cs" />
-    <Compile Include="Player.cs" />
-    <Compile Include="Classes.cs" />
+    <Compile Include="Scripts\ClassMenu.cs" />
+    <Compile Include="Scripts\Classes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TeamMenu.cs" />
-    <Compile Include="Weapons.cs" />
-    <Compile Include="Ammunition.cs" />
+    <Compile Include="Scripts\Main.cs" />
+    <Compile Include="Scripts\Player.cs" />
+    <Compile Include="Scripts\TeamMenu.cs" />
+    <Compile Include="Scripts\Weapons.cs" />
+    <Compile Include="Scripts\Ammunition.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
