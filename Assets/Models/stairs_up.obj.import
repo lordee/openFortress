@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/stairs_up.obj-8dd960c6f865172539e41ccff52792f0.mesh"
+
+[deps]
+
+files=[ "res://.import/stairs_up.obj-8dd960c6f865172539e41ccff52792f0.mesh" ]
+
+source_file="res://Assets/Models/stairs_up.obj"
+dest_files=[ "res://.import/stairs_up.obj-8dd960c6f865172539e41ccff52792f0.mesh", "res://.import/stairs_up.obj-8dd960c6f865172539e41ccff52792f0.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )
