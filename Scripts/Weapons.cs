@@ -49,7 +49,7 @@ abstract public class Weapon : MeshInstance
         }
     }
 
-    public MeshInstance Mesh
+    public MeshInstance WeaponMesh
     {
         get {
             return _mi;
@@ -84,12 +84,14 @@ abstract public class Weapon : MeshInstance
         }
     }
 
-    public void Spawn(Node camera)
+    public void Spawn(Node camera, string Name)
     {
         PackedScene PackedScene = (PackedScene)ResourceLoader.Load(Resource);
-        Mesh = (MeshInstance)PackedScene.Instance();
-        camera.AddChild(Mesh);
-        Mesh.Translation = this.SpawnTranslation;
+        WeaponMesh = (MeshInstance)PackedScene.Instance();
+        camera.AddChild(WeaponMesh);
+        WeaponMesh.Translation = this.SpawnTranslation;
+        WeaponMesh.SetName(Name);
+        WeaponMesh.SetVisible(false);
     }
 }
 
@@ -234,7 +236,7 @@ public class NailGun : Weapon
         _damage = 15;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Nails;
-        _resource = "res://Shotgun.tscn";
+        _resource = "res://MachineGun.tscn";
     }
 }
 

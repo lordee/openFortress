@@ -44,7 +44,6 @@ public class Player : KinematicBody
     Spatial head;
     Camera camera;
     RayCast stairCatcher;
-    Sprite3D muzzleFlash;
     Label HealthLabel;
     Label ArmourLabel;
 
@@ -112,6 +111,8 @@ public class Player : KinematicBody
     private int _currentNails = 0;
     private int _currentRockets = 0;
     private int _currentCells = 0;
+    private int _currentGren1 = 0;
+    private int _currentGren2 = 0;
     
     private Weapon _activeWeapon;
     public Weapon ActiveWeapon
@@ -144,13 +145,17 @@ public class Player : KinematicBody
                 if (ammoQty >= ammoReq)
                 {
                     // hide current activeweapon
-                    _activeWeapon.Visible = false;
+                    if (_activeWeapon != null)
+                    {
+                        _activeWeapon.WeaponMesh.Visible = false;
+
+                    }
 
                     // set active weapon
                     _activeWeapon = value;
 
                     // make active weapon visible
-                    _activeWeapon.Visible = true;
+                    _activeWeapon.WeaponMesh.Visible = true;
                 }
             }
         }
@@ -178,7 +183,6 @@ public class Player : KinematicBody
         head = (Spatial)GetNode("Head");
         camera = (Camera)head.GetNode("Camera");
         stairCatcher = (RayCast)GetNode("StairCatcher");
-        muzzleFlash = (Sprite3D)camera.GetNode("MachineGun").GetNode("MuzzleFlash");
         HealthLabel = (Label)GetNode("/root/Main/UI/HealthLabel");
         ArmourLabel = (Label)GetNode("/root/Main/UI/ArmourLabel");
         // enable ladders
@@ -304,6 +308,12 @@ public class Player : KinematicBody
         GD.Print(this.Class.ToString());
         this.CurrentHealth = this.Class.Health;
         this.CurrentArmour = this.Class.Armour / 2;
+        this._currentShells = Math.Abs(this.Class.MaxShells / 2);
+        this._currentNails = Math.Abs(this.Class.MaxNails / 2);
+        this._currentRockets = Math.Abs(this.Class.MaxRockets / 2);
+        this._currentCells = Math.Abs(this.Class.MaxCells / 2);
+        this._currentGren1 = Math.Abs(this.Class.MaxGren1 / 2);
+        this._currentGren2 = Math.Abs(this.Class.MaxGren2 / 2);
     }
 
     private void QueueJump()
