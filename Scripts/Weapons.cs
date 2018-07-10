@@ -24,9 +24,39 @@ public enum Ammunition
 
 abstract public class Weapon : MeshInstance
 {
-    abstract public MeshInstance mi
+    protected int _damage;
+    protected MeshInstance _mi;
+    protected string _scene;
+    protected int _minAmmoRequired;
+    protected Ammunition _ammoType;
+    protected string _resource;
+
+    public Weapon() {
+
+    }
+
+    public string Scene
     {
-        get; set;
+        get {
+            return _scene;
+        }
+    }
+
+    public string Resource
+    {
+        get {
+            return _resource;
+        }
+    }
+
+    public MeshInstance Mesh
+    {
+        get {
+            return _mi;
+        }
+        set {
+            _mi = value;
+        }
     }
     public Vector3 SpawnTranslation
     {
@@ -34,917 +64,331 @@ abstract public class Weapon : MeshInstance
             return new Vector3(.5f, -.5f, -.9f);
         }
     }
-    abstract public int Damage
+    public int Damage
     {
-        get;
+        get {
+            return _damage;
+        }
     }
 
-    abstract public int MinAmmoRequired
+    public int MinAmmoRequired
     {
-        get;
+        get {
+            return _minAmmoRequired;
+        }
     }
-    abstract public Ammunition AmmoType
+    public Ammunition AmmoType
     {
-        get;
+        get {
+            return _ammoType;
+        }
     }
 
     public void Spawn(Node camera)
     {
-        camera.AddChild(mi);
-        mi.Translation = this.SpawnTranslation;
+        PackedScene PackedScene = (PackedScene)ResourceLoader.Load(Resource);
+        Mesh = (MeshInstance)PackedScene.Instance();
+        camera.AddChild(Mesh);
+        Mesh.Translation = this.SpawnTranslation;
     }
 }
 
 public class FragGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public FragGrenade() {
         GD.Print("FragGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 100;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.FragGrenade;
-        }
+        _damage = 100;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.FragGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 // magic fly tool grenade - old concussion
 public class MFTGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public MFTGrenade() {
         GD.Print("MFTGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 0;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.MFTGrenade;
-        }
+        _damage = 0;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.MFTGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class ConcussionGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public ConcussionGrenade() {
         GD.Print("ConcussionGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 0;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.ConcussionGrenade;
-        }
+        _damage = 0;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.ConcussionGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 // this is useless, replace it with something
 public class Flare : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public Flare() {
         GD.Print("Flare");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 0;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Flare;
-        }
+        _damage = 0;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Flare;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class NailGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public NailGrenade() {
         GD.Print("NailGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 50;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.NailGrenade;
-        }
+        _damage = 50;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.NailGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class MIRVGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public MIRVGrenade() {
         GD.Print("MIRVGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 50;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.MIRVGrenade;
-        }
+        _damage = 50;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.MIRVGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class NapalmGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public NapalmGrenade() {
         GD.Print("NapalmGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 20;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.NapalmGrenade;
-        }
+        _damage = 20;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.NapalmGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class GasGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public GasGrenade() {
         GD.Print("GasGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.GasGrenade;
-        }
+        _damage = 10;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.GasGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class EMPGrenade : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public EMPGrenade() {
         GD.Print("EMPGrenade");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 0;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.EMPGrenade;
-        }
+        _damage = 0;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.EMPGrenade;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class Axe : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public Axe() {
         GD.Print("Axe");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 0;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Axe;
-        }
+        _damage = 25;
+        _minAmmoRequired = 0;
+        _ammoType = Ammunition.Axe;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class Shotgun : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public Shotgun() {
         GD.Print("Shotgun");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 25;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Shells;
-        }
+        _damage = 25;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Shells;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class SuperShotgun : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public SuperShotgun() {
         GD.Print("SuperShotgun");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 50;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 2;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Shells;
-        }
+        _damage = 50;
+        _minAmmoRequired = 2;
+        _ammoType = Ammunition.Shells;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class NailGun : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public NailGun() {
         GD.Print("NailGun");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 15;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Nails;
-        }
+        _damage = 15;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Nails;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class SniperRifle : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public SniperRifle() {
         GD.Print("SniperRifle");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Shells;
-        }
+        _damage = 10;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Shells;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class AutoRifle : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public AutoRifle() {
         GD.Print("AutoRifle");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Shells;
-        }
+        _damage = 10;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Shells;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class SuperNailGun : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public SuperNailGun() {
         GD.Print("SuperNailGun");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 30;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 2;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Nails;
-        }
+        _damage = 30;
+        _minAmmoRequired = 2;
+        _ammoType = Ammunition.Nails;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class GrenadeLauncher : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public GrenadeLauncher() {
         GD.Print("GrenadeLauncher");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 100;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Rockets;
-        }
+        _damage = 100;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Rockets;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class PipebombLauncher : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public PipebombLauncher() {
         GD.Print("PipebombLauncher");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 100;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Rockets;
-        }
+        _damage = 100;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Rockets;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class RocketLauncher : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public RocketLauncher() {
         GD.Print("RocketLauncher");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 100;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Rockets;
-        }
+        _damage = 100;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Rockets;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class Syringe : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public Syringe() {
         GD.Print("Syringe");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 0;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Axe;
-        }
+        _damage = 10;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Axe;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class MiniGun : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public MiniGun() {
         GD.Print("MiniGun");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Shells;
-        }
+        _damage = 10;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Shells;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class FlameThrower : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public FlameThrower() {
         GD.Print("FlameThrower");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Cells;
-        }
+        _damage = 10;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Cells;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class PyroLauncher : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public PyroLauncher() {
         GD.Print("PyroLauncher");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 3;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Rockets;
-        }
+        _damage = 10;
+        _minAmmoRequired = 3;
+        _ammoType = Ammunition.Rockets;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class Tranquiliser : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public Tranquiliser() {
         GD.Print("Tranquiliser");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Shells;
-        }
+        _damage = 10;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Shells;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class Knife : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public Knife() {
         GD.Print("Knife");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 100;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 0;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Axe;
-        }
+        _damage = 100;
+        _minAmmoRequired = 0;
+        _ammoType = Ammunition.Axe;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class RailGun : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public RailGun() {
         GD.Print("RailGun");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 20;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Nails;
-        }
+        _damage = 20;
+        _minAmmoRequired = 1;
+        _ammoType = Ammunition.Nails;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
 public class Spanner : Weapon
 {
-    override public MeshInstance mi
-    {
-        get; set;
-    }
-
     public Spanner() {
         GD.Print("Spanner");
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load("res://Shotgun.tscn");
-        mi = (MeshInstance)PackedScene.Instance();
-    }
-
-    override public int Damage
-    {
-        get {
-            return 10;
-        }
-    }
-    override public int MinAmmoRequired
-    {
-        get {
-            return 1;
-        }
-    }
-    override public Ammunition AmmoType
-    {
-        get {
-            return Ammunition.Axe;
-        }
+        _damage = 25;
+        _minAmmoRequired = 0;
+        _ammoType = Ammunition.Axe;
+        _resource = "res://Shotgun.tscn";
     }
 }
 
