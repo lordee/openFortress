@@ -104,12 +104,12 @@ abstract public class TFClass
 
         if (Weapon3 != null)
         {
-            Weapon3.Spawn(camera, "Weapon3");
+            //Weapon3.Spawn(camera, "Weapon3");
         }
 
         if (Weapon4 != null)
         {
-            Weapon4.Spawn(camera, "Weapon4");
+            //Weapon4.Spawn(camera, "Weapon4");
         }
     }
 }
