@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 // these will no doubt move to their own classes and godot scenes/nodes
 // just use these as definitions for now
@@ -25,14 +26,31 @@ public enum Ammunition
 abstract public class Weapon : MeshInstance
 {
     protected int _damage;
-    protected MeshInstance _mi;
+    protected string _weaponResource;
+    protected MeshInstance _weaponMesh;
     protected string _scene;
     protected int _minAmmoRequired;
     protected Ammunition _ammoType;
-    protected string _resource;
+    protected int _clipSize;
+    protected int _clipLeft;
+    protected float _timeSinceLastShot;
+    protected float _coolDown;
+    protected bool _projectile = false;
+    protected float _timeSinceReloaded;
+    protected float _reloadTime;
+    protected string _projectileResource;
+    protected Projectile _projectileMesh;
+    protected PackedScene _projectileScene;
+    
+    
+
+    private Sprite3D muzzleFlash;
+    private AudioStreamPlayer3D shootSound;
+    private AudioStreamPlayer3D reloadSound;
+    private float ShootRange = 1000f;
+    Node MainNode;
 
     public Weapon() {
-
     }
 
     public string Scene
@@ -42,22 +60,50 @@ abstract public class Weapon : MeshInstance
         }
     }
 
-    public string Resource
+    public string WeaponResource
     {
         get {
-            return _resource;
+            return _weaponResource;
         }
     }
 
     public MeshInstance WeaponMesh
     {
         get {
-            return _mi;
+            return _weaponMesh;
         }
         set {
-            _mi = value;
+            _weaponMesh = value;
         }
     }
+
+    public string ProjectileResource
+    {
+        get {
+            return _projectileResource;
+        }
+    }
+
+    public PackedScene ProjectileScene
+    {
+        get {
+            return _projectileScene;
+        }
+        set {
+            _projectileScene = value;
+        }
+    }
+
+    public Projectile ProjectileMesh
+    {
+        get {
+            return _projectileMesh;
+        }
+        set {
+            _projectileMesh = value;
+        }
+    }
+
     public Vector3 SpawnTranslation
     {
         get {
@@ -84,14 +130,179 @@ abstract public class Weapon : MeshInstance
         }
     }
 
+    public int ClipLeft
+    {
+        get {
+            return _clipLeft;
+        }
+        set {
+            _clipLeft = ClipSize == -1 ? 999 : value;
+        }
+    }
+
+    public int ClipSize
+    {
+        get {
+            return _clipSize;
+        }
+    }
+
+    public float TimeSinceLastShot
+    {
+        get {
+            return _timeSinceLastShot;
+        }
+        set {
+            if (value > 0.1f)
+            {
+                muzzleFlash.Hide();
+            }
+            _timeSinceLastShot = value;
+        }
+    }
+
+    public float CoolDown
+    {
+        get {
+            return _coolDown;
+        }
+    }
+
+    public bool Projectile
+    {
+        get {
+            return _projectile;
+        }
+    }
+
+    public float TimeSinceReloaded
+    {
+        get {
+            return _timeSinceReloaded;
+        }
+        set {
+            _timeSinceReloaded = value;
+            if (_timeSinceReloaded > ReloadTime)
+            {
+                this.Reload(true);
+            }
+        }
+    }
+
+    public float ReloadTime
+    {
+        get {
+            return _reloadTime;
+        }
+    }
+
+    public bool Shoot(Camera camera, Vector2 cameraCenter) 
+    {
+        bool shot = false;
+        // if weapon has hit cooldown
+        if (TimeSinceLastShot >= CoolDown)
+        {
+            // if enough ammunition in clip
+            GD.Print("ClipSize: " + ClipSize);
+            GD.Print("ClipLeft: " + ClipLeft);
+            if (ClipLeft >= MinAmmoRequired)
+            {
+                ClipLeft -= MinAmmoRequired;
+                // fire either hitscan or projectile
+                muzzleFlash.Show();
+                if (Projectile)
+                {
+                    // spawn projectile, set it moving
+                    GD.Print("ProjectileScene: " + ProjectileScene);
+                    ProjectileMesh = (Projectile)ProjectileScene.Instance();
+                    
+                    //ProjectileMesh.Init();
+                    ProjectileMesh.Translation = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
+                    ProjectileMesh.Init(camera.GetGlobalTransform().basis);
+                    
+                    //ProjectileMesh.Destination = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)), new Vector3(0,1,0);
+                    //ProjectileMesh.LookAt(camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)), new Vector3(0,1,0));
+                    // set direction
+                    //ProjectileMesh.SetRotationDegrees(camera.GetRotationDegrees());
+
+
+                    // add to scene
+                    MainNode.AddChild(ProjectileMesh);
+                }
+                else 
+                {
+                    shootSound.Play();
+                    PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
+                    // null should be self?
+                    Vector3 shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
+                    Vector3 shootNormal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * ShootRange;
+                    Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
+
+                    Vector3 impulse;
+                    Vector3 impact_position;
+                    if (result.Count > 0)
+                    {
+                        impact_position = (Vector3)result["position"];
+                        impulse = (impact_position - (Vector3)GlobalTransform.origin).Normalized();
+                        
+                        if (result["collider"] is RigidBody c)
+                        {
+                            Vector3 position = impact_position - c.GlobalTransform.origin;
+                            c.ApplyImpulse(position, impulse * 10);
+                        }
+                    }
+                }
+                shot = true;
+            }
+            else
+            {
+                // force a reload
+                this.Reload(false);
+                shot = false;
+            }
+        }
+        else
+        {
+            shot = false;
+        }
+        return shot;
+    }
+
+    public void Reload(bool reloadFinished)
+    {
+        if (reloadFinished)
+        {
+            GD.Print("Reloaded");
+            WeaponMesh.SetVisible(true);
+        } else 
+        {
+            GD.Print("Reloading...");
+            WeaponMesh.SetVisible(false);
+            this.TimeSinceReloaded = 0f;
+        }
+    }
+
     public void Spawn(Node camera, string Name)
     {
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load(Resource);
+        MainNode = camera.GetNode("/root/Main");
+        PackedScene PackedScene = (PackedScene)ResourceLoader.Load(WeaponResource);
         WeaponMesh = (MeshInstance)PackedScene.Instance();
         camera.AddChild(WeaponMesh);
         WeaponMesh.Translation = this.SpawnTranslation;
         WeaponMesh.SetName(Name);
         WeaponMesh.SetVisible(false);
+        muzzleFlash = (Sprite3D)WeaponMesh.GetNode("MuzzleFlash");
+        shootSound = (AudioStreamPlayer3D)WeaponMesh.GetNode("ShootSound");
+        reloadSound = (AudioStreamPlayer3D)WeaponMesh.GetNode("ReloadSound");
+        // projectile mesh
+        if (Projectile)
+        {
+            ProjectileScene = (PackedScene)ResourceLoader.Load(ProjectileResource);
+            GD.Print("loaded projectilescene");
+            GD.Print(ProjectileScene.ResourceName);
+        }
+        
+        GD.Print("Loaded " + Name);
     }
 }
 
@@ -102,7 +313,7 @@ public class FragGrenade : Weapon
         _damage = 100;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.FragGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -114,7 +325,7 @@ public class MFTGrenade : Weapon
         _damage = 0;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.MFTGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -125,7 +336,7 @@ public class ConcussionGrenade : Weapon
         _damage = 0;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.ConcussionGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -137,7 +348,7 @@ public class Flare : Weapon
         _damage = 0;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Flare;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -148,7 +359,7 @@ public class NailGrenade : Weapon
         _damage = 50;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.NailGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -159,7 +370,7 @@ public class MIRVGrenade : Weapon
         _damage = 50;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.MIRVGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -170,7 +381,7 @@ public class NapalmGrenade : Weapon
         _damage = 20;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.NapalmGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -181,7 +392,7 @@ public class GasGrenade : Weapon
         _damage = 10;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.GasGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -192,7 +403,7 @@ public class EMPGrenade : Weapon
         _damage = 0;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.EMPGrenade;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -203,7 +414,7 @@ public class Axe : Weapon
         _damage = 25;
         _minAmmoRequired = 0;
         _ammoType = Ammunition.Axe;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -214,7 +425,7 @@ public class Shotgun : Weapon
         _damage = 25;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -225,7 +436,7 @@ public class SuperShotgun : Weapon
         _damage = 50;
         _minAmmoRequired = 2;
         _ammoType = Ammunition.Shells;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -236,7 +447,7 @@ public class NailGun : Weapon
         _damage = 15;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Nails;
-        _resource = "res://MachineGun.tscn";
+        _weaponResource = "res://MachineGun.tscn";
     }
 }
 
@@ -247,7 +458,7 @@ public class SniperRifle : Weapon
         _damage = 10;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -258,7 +469,7 @@ public class AutoRifle : Weapon
         _damage = 10;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -269,7 +480,7 @@ public class SuperNailGun : Weapon
         _damage = 30;
         _minAmmoRequired = 2;
         _ammoType = Ammunition.Nails;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -280,7 +491,7 @@ public class GrenadeLauncher : Weapon
         _damage = 100;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -291,7 +502,7 @@ public class PipebombLauncher : Weapon
         _damage = 100;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -299,10 +510,13 @@ public class RocketLauncher : Weapon
 {
     public RocketLauncher() {
         GD.Print("RocketLauncher");
-        _damage = 100;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
+        _projectile = true;
+        _projectileResource = "res://Rocket.tscn";
+        _clipSize = 4;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
     }
 }
 
@@ -313,7 +527,7 @@ public class Syringe : Weapon
         _damage = 10;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Axe;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -324,7 +538,7 @@ public class MiniGun : Weapon
         _damage = 10;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -335,7 +549,7 @@ public class FlameThrower : Weapon
         _damage = 10;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Cells;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -346,7 +560,7 @@ public class PyroLauncher : Weapon
         _damage = 10;
         _minAmmoRequired = 3;
         _ammoType = Ammunition.Rockets;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -357,7 +571,7 @@ public class Tranquiliser : Weapon
         _damage = 10;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -368,7 +582,7 @@ public class Knife : Weapon
         _damage = 100;
         _minAmmoRequired = 0;
         _ammoType = Ammunition.Axe;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -379,7 +593,7 @@ public class RailGun : Weapon
         _damage = 20;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Nails;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
@@ -390,7 +604,7 @@ public class Spanner : Weapon
         _damage = 25;
         _minAmmoRequired = 0;
         _ammoType = Ammunition.Axe;
-        _resource = "res://Shotgun.tscn";
+        _weaponResource = "res://Shotgun.tscn";
     }
 }
 
