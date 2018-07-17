@@ -78,7 +78,11 @@ public class Player : KinematicBody
         }
         set {
             _class = value;
-            _class.SpawnWeapons(this.camera);
+            if (value.GetType() != typeof(Observer))
+            {   
+                _class.SpawnWeapons(this.camera);
+            }
+            
             // respawn instantly on class change
             this.Spawn(Main.GetNextSpawn(this.TeamID));
         }
@@ -114,6 +118,31 @@ public class Player : KinematicBody
     private int _currentGren1 = 0;
     private int _currentGren2 = 0;
     
+    private int _activeAmmo;
+    private int ActiveAmmo
+    {
+        get {
+            return _activeAmmo;
+        }
+        set {
+            switch (_activeWeapon.AmmoType)
+            {
+                case Ammunition.Shells:
+                        this._currentShells = value;
+                    break;
+                    case Ammunition.Nails:
+                        this._currentNails = value;
+                    break;
+                    case Ammunition.Rockets:
+                        this._currentRockets = value;
+                    break;
+                    case Ammunition.Cells:
+                        this._currentCells = value;
+                    break;
+            }
+            _activeAmmo = value;
+        }
+    }
     private Weapon _activeWeapon;
     public Weapon ActiveWeapon
     {
@@ -148,11 +177,11 @@ public class Player : KinematicBody
                     if (_activeWeapon != null)
                     {
                         _activeWeapon.WeaponMesh.Visible = false;
-
                     }
 
                     // set active weapon
                     _activeWeapon = value;
+                    ActiveAmmo = ammoQty;
 
                     // make active weapon visible
                     _activeWeapon.WeaponMesh.Visible = true;
@@ -167,8 +196,6 @@ public class Player : KinematicBody
     // shooting
     float shootRange = 1000F;
     Vector2 cameraCenter;
-    Vector3 shootOrigin;
-    Vector3 shootNormal;
     private bool shooting = false;
 
     // bunnyhopping
@@ -185,6 +212,9 @@ public class Player : KinematicBody
         stairCatcher = (RayCast)GetNode("StairCatcher");
         HealthLabel = (Label)GetNode("/root/Main/UI/HealthLabel");
         ArmourLabel = (Label)GetNode("/root/Main/UI/ArmourLabel");
+        cameraCenter.x = OS.GetWindowSize().x / 2;
+        cameraCenter.y = OS.GetWindowSize().y / 2;
+
         // enable ladders
         var ladders = GetTree().GetNodesInGroup("Ladders");
         foreach (Area l in ladders)
@@ -219,9 +249,6 @@ public class Player : KinematicBody
             // shooting
             if (e is InputEventMouseButton emb && e.IsPressed())
             {
-                shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
-                shootNormal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * shootRange;
-
                 // TODO change this to a command later
                 if (emb.ButtonIndex == 1)
                 {
@@ -252,6 +279,7 @@ public class Player : KinematicBody
     {
         if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
+            ActiveWeapon.TimeSinceLastShot += delta;
             QueueJump();
             if (touchingGround || climbLadder)
             {
@@ -267,37 +295,32 @@ public class Player : KinematicBody
             float speed = playerVelocity.Length();
             //GD.Print("Speed: " + speed.ToString());
 
-            /*if (shooting)
+            if (shooting)
             {
-                muzzleFlash.Show();
-                AudioStreamPlayer3D s = (AudioStreamPlayer3D)camera.GetNode("MachineGun").GetNode("Sound");
-                s.Play();
-                PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
-                // null should be self?
-                Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
-
-                Vector3 impulse;
-                Vector3 impact_position;
-                if (result.Count > 0)
-                {
-                    impact_position = (Vector3)result["position"];
-                    impulse = (impact_position - (Vector3)GlobalTransform.origin).Normalized();
-                    
-                    if (result["collider"] is RigidBody c)
-                    {
-                        Vector3 position = impact_position - c.GlobalTransform.origin;
-                        c.ApplyImpulse(position, impulse * 10);
-                    }
-                }
-                
-                shooting = false;
+                this.Shoot();
             }
-            else
-            {
-                muzzleFlash.Hide();
-            }
-                */
         }
+    }
+
+    private void Shoot()
+    {
+        // if there's enough ammunition
+        GD.Print("ActiveAmmo: " + ActiveAmmo);
+        GD.Print("ActiveWeapon.MinAmmoRequired: " + ActiveWeapon.MinAmmoRequired);
+        if (ActiveAmmo >= ActiveWeapon.MinAmmoRequired)
+        {
+            // if weapon is off cooldown
+            if (ActiveWeapon.Shoot(camera, cameraCenter))
+            {
+                // modify current ammunition
+                ActiveAmmo -= ActiveWeapon.MinAmmoRequired;
+            }
+        }
+        else
+        {
+            GD.Print("You do not have enough ammunition to fire this gun.");
+        }       
+        shooting = false;
     }
 
     public void Spawn(Vector3 loc)
@@ -314,6 +337,10 @@ public class Player : KinematicBody
         this._currentCells = Math.Abs(this.Class.MaxCells / 2);
         this._currentGren1 = Math.Abs(this.Class.MaxGren1 / 2);
         this._currentGren2 = Math.Abs(this.Class.MaxGren2 / 2);
+        if (Class.Weapon1 != null)
+        {
+            ActiveWeapon = Class.Weapon1;
+        }
     }
 
     private void QueueJump()
