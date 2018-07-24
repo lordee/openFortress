@@ -47,14 +47,14 @@ public class Player : KinematicBody
     Label HealthLabel;
     Label ArmourLabel;
 
-    private Main _main;
-    private Main Main {
+    private Main _mainNode;
+    private Main MainNode {
         get {
-            if (_main == null)
+            if (_mainNode == null)
             {
-                _main = (Main)GetNode("/root/Main");
+                _mainNode = (Main)GetNode("/root/Main");
             }
-            return _main;
+            return _mainNode;
         }
     }
 
@@ -68,7 +68,7 @@ public class Player : KinematicBody
             Class = new Observer();
             _teamID = value;
 
-            this.Spawn(Main.GetNextSpawn(value));
+            this.Spawn(MainNode.GetNextSpawn(value));
         }
     }
     private TFClass _class = new Observer();
@@ -80,11 +80,11 @@ public class Player : KinematicBody
             _class = value;
             if (value.GetType() != typeof(Observer))
             {   
-                _class.SpawnWeapons(this.camera);
+                _class.SpawnWeapons(MainNode, this.camera);
             }
             
             // respawn instantly on class change
-            this.Spawn(Main.GetNextSpawn(this.TeamID));
+            this.Spawn(MainNode.GetNextSpawn(this.TeamID));
         }
     }
     private int _currentArmour;
@@ -290,7 +290,7 @@ public class Player : KinematicBody
                 AirMove(delta);
             }
             
-            playerVelocity = MoveAndSlide(playerVelocity, up);
+            playerVelocity = this.MoveAndSlide(playerVelocity, up);
             touchingGround = IsOnFloor();     
             float speed = playerVelocity.Length();
             //GD.Print("Speed: " + speed.ToString());
