@@ -1,16 +1,11 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Assets/Models/Guns/ammo_rocket.obj" type="ArrayMesh" id=1]
 [ext_resource path="res://Scripts/Rocket.cs" type="Script" id=2]
 
-[sub_resource type="CapsuleShape" id=1]
-
-radius = 0.01
-height = 0.05
-
 [node name="ProjectileMesh" type="MeshInstance" index="0"]
 
-transform = Transform( 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0 )
+transform = Transform( 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0.283867 )
 layers = 1
 material_override = null
 cast_shadow = 1
@@ -38,24 +33,5 @@ material/12 = null
 material/13 = null
 script = ExtResource( 2 )
 _sections_unfolded = [ "Transform" ]
-
-[node name="KinematicBody" type="KinematicBody" parent="." index="0"]
-
-input_ray_pickable = true
-input_capture_on_drag = false
-collision_layer = 1
-collision_mask = 1
-axis_lock_linear_x = false
-axis_lock_linear_y = false
-axis_lock_linear_z = false
-axis_lock_angular_x = false
-axis_lock_angular_y = false
-axis_lock_angular_z = false
-collision/safe_margin = 0.001
-
-[node name="CollisionShape" type="CollisionShape" parent="KinematicBody" index="0"]
-
-shape = SubResource( 1 )
-disabled = false
 
 

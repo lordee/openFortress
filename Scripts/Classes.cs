@@ -90,7 +90,7 @@ abstract public class TFClass
         }   
     }
 
-    public void SpawnWeapons(Node camera)
+    public void SpawnWeapons(Node mainNode, Node camera)
     {
         if (Weapon1 != null)
         {

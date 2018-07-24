@@ -213,21 +213,13 @@ abstract public class Weapon : MeshInstance
                 if (Projectile)
                 {
                     // spawn projectile, set it moving
-                    GD.Print("ProjectileScene: " + ProjectileScene);
                     ProjectileMesh = (Projectile)ProjectileScene.Instance();
-                    
-                    //ProjectileMesh.Init();
-                    ProjectileMesh.Translation = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
-                    ProjectileMesh.Init(camera.GetGlobalTransform().basis);
-                    
-                    //ProjectileMesh.Destination = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)), new Vector3(0,1,0);
-                    //ProjectileMesh.LookAt(camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)), new Vector3(0,1,0));
-                    // set direction
-                    //ProjectileMesh.SetRotationDegrees(camera.GetRotationDegrees());
-
-
+                                      
                     // add to scene
-                    MainNode.AddChild(ProjectileMesh);
+                    WeaponMesh.GetNode("/root/Main").AddChild(ProjectileMesh);
+                    
+                    Transform t = camera.GetGlobalTransform();
+                    ProjectileMesh.Init(t);
                 }
                 else 
                 {
@@ -284,7 +276,6 @@ abstract public class Weapon : MeshInstance
 
     public void Spawn(Node camera, string Name)
     {
-        MainNode = camera.GetNode("/root/Main");
         PackedScene PackedScene = (PackedScene)ResourceLoader.Load(WeaponResource);
         WeaponMesh = (MeshInstance)PackedScene.Instance();
         camera.AddChild(WeaponMesh);
@@ -298,8 +289,6 @@ abstract public class Weapon : MeshInstance
         if (Projectile)
         {
             ProjectileScene = (PackedScene)ResourceLoader.Load(ProjectileResource);
-            GD.Print("loaded projectilescene");
-            GD.Print(ProjectileScene.ResourceName);
         }
         
         GD.Print("Loaded " + Name);
