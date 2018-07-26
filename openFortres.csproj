@@ -49,6 +49,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RocketExplosion.cs" />
     <Compile Include="Scripts\ClassMenu.cs" />
     <Compile Include="Scripts\Classes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
