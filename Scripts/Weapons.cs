@@ -53,6 +53,13 @@ abstract public class Weapon : MeshInstance
     public Weapon() {
     }
 
+    // make our own physics process because we do everything via script
+    public void PhysicsProcess(float delta)
+    {
+        this.TimeSinceLastShot += delta;
+        this.TimeSinceReloaded += delta;
+    }
+
     public string Scene
     {
         get {
@@ -147,6 +154,8 @@ abstract public class Weapon : MeshInstance
         }
     }
 
+    public int AmmoLeft;
+
     public float TimeSinceLastShot
     {
         get {
@@ -182,7 +191,7 @@ abstract public class Weapon : MeshInstance
         }
         set {
             _timeSinceReloaded = value;
-            if (_timeSinceReloaded > ReloadTime)
+            if (_timeSinceReloaded > ReloadTime && this.Reloading)
             {
                 this.Reload(true);
             }
@@ -195,6 +204,7 @@ abstract public class Weapon : MeshInstance
             return _reloadTime;
         }
     }
+    public bool Reloading = false;
 
     public bool Shoot(Camera camera, Vector2 cameraCenter) 
     {
@@ -207,6 +217,7 @@ abstract public class Weapon : MeshInstance
             GD.Print("ClipLeft: " + ClipLeft);
             if (ClipLeft >= MinAmmoRequired)
             {
+                this.TimeSinceLastShot = 0f;
                 ClipLeft -= MinAmmoRequired;
                 // fire either hitscan or projectile
                 muzzleFlash.Show();
@@ -266,11 +277,14 @@ abstract public class Weapon : MeshInstance
         {
             GD.Print("Reloaded");
             WeaponMesh.SetVisible(true);
+            this.ClipLeft = this.AmmoLeft < this.ClipSize ? this.AmmoLeft : this.ClipSize;
+            this.Reloading = false;
         } else 
         {
             GD.Print("Reloading...");
             WeaponMesh.SetVisible(false);
             this.TimeSinceReloaded = 0f;
+            this.Reloading = true;
         }
     }
 
@@ -506,6 +520,8 @@ public class RocketLauncher : Weapon
         _projectileResource = "res://Rocket.tscn";
         _clipSize = 4;
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;
+        _coolDown = 1.0f;
+        _reloadTime = 4.0f;
     }
 }
 

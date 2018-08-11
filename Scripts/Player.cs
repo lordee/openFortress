@@ -185,6 +185,7 @@ public class Player : KinematicBody
 
                     // make active weapon visible
                     _activeWeapon.WeaponMesh.Visible = true;
+                    _activeWeapon.AmmoLeft = ActiveAmmo;
                 }
             }
         }
@@ -277,9 +278,10 @@ public class Player : KinematicBody
 
     public override void _PhysicsProcess(float delta)
     {
+        
         if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
-            ActiveWeapon.TimeSinceLastShot += delta;
+            ActiveWeapon.PhysicsProcess(delta);
             QueueJump();
             if (touchingGround || climbLadder)
             {
