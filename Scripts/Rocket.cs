@@ -9,6 +9,18 @@ public class Projectile : KinematicBody
     protected int _damage;
     protected string _particleResource;
     private PackedScene _particleScene;
+    protected bool _areaOfEffect;
+    protected float _areaOfEffectRadius;
+
+    public bool AreaOfEffect {
+        get { return _areaOfEffect; }
+        set { _areaOfEffect = value; }
+    }
+
+    public float AreaOfEffectRadius {
+        get { return _areaOfEffectRadius; }
+        set { _areaOfEffectRadius = value; }
+    }
 
     public int Speed {
         get { return _speed; }
@@ -56,6 +68,12 @@ public class Projectile : KinematicBody
             
             // remove projectile
             GetTree().QueueDelete(this);
+
+            // apply damage?
+            // if c collider is kinematic body or if there are kinematic bodies nearby
+            // have them take damage
+            // taking damage causes movement to be added
+            GD.Print(c.Collider);
         }
     }
 }
@@ -66,6 +84,8 @@ public class Rocket : Projectile
     {
         _speed = 5;
         _damage = 100;
-        _particleResource = "res://RocketExplosion.tscn";
+        _particleResource = "res://Scenes/Weapons/RocketExplosion.tscn";
+        _areaOfEffect = true;
+        _areaOfEffectRadius = 10f;
     }
 }

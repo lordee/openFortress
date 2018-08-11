@@ -150,7 +150,7 @@ public class Player : KinematicBody
             return _activeWeapon;
         }
         set {
-            if (value != null) 
+            if (value != null)
             {
                 // if player has min amount of ammunition required
                 int ammoReq = value.MinAmmoRequired;
