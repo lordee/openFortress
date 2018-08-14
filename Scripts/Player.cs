@@ -58,6 +58,9 @@ public class Player : KinematicBody
         }
     }
 
+    // networking state probably
+    public int PlayerID = 0;
+
     // state
     private int _teamID = 9;
     public int TeamID { 
@@ -223,6 +226,8 @@ public class Player : KinematicBody
             l.Connect("body_entered", this, "_on_Ladder_body_entered");
             l.Connect("body_exited", this, "_on_Ladder_body_exited");
         }
+
+        this.SetName(this.PlayerID.ToString());
     }
 
     public override void _Input(InputEvent e)

@@ -10,9 +10,14 @@ public class Main : Node
 
     public override void _Ready()
     {
+        PackedScene playerScene = (PackedScene)ResourceLoader.Load("res://Player.tscn");
+        Player player = (Player)playerScene.Instance();
+        this.AddChild(player);
+
         PackedScene m = (PackedScene)ResourceLoader.Load("res://TeamMenu.tscn");
         TeamMenu m2 = (TeamMenu)m.Instance();
         this.AddChild(m2); 
+        m2.Init(player.GetName());
         spawnsTeam1 = GetTree().GetNodesInGroup("SpawnTeam1");
         spawnsTeam2 = GetTree().GetNodesInGroup("SpawnTeam2");
     }

@@ -6,16 +6,20 @@ public class ClassMenu : VBoxContainer
 
     public override void _Ready()
     {
+        
+    }
+    public void Init(string nodeName)
+    {
         var buttons = GetTree().GetNodesInGroup("classbutton");
         foreach (Button b in buttons)
         {
-            b.Connect("pressed", this, "_on_Button_Pressed", new object[] { b });
+            b.Connect("pressed", this, "_on_Button_Pressed", new object[] { b, nodeName });
         }
     }
 
-    private void _on_Button_Pressed(Button b)
+    private void _on_Button_Pressed(Button b, string nodeName)
     {
-        Player p = (Player)GetNode("/root/Main/Player");
+        Player p = (Player)GetNode("/root/Main/" + nodeName);
 
         switch (b.Name)
         {
