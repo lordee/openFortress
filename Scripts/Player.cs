@@ -309,6 +309,11 @@ public class Player : KinematicBody
         }
     }
 
+    public void TakeDamage(string inflictorTransform, string inflictorType, Player attacker, float damage)
+    {
+
+    }
+
     private void Shoot()
     {
         // if there's enough ammunition
