@@ -309,9 +309,47 @@ public class Player : KinematicBody
         }
     }
 
-    public void TakeDamage(string inflictorTransform, string inflictorType, Player attacker, float damage)
+    public void TakeDamage(Transform inflictorTransform, string inflictorType, Player attacker, float damage)
     {
+        // take from armour and health
+        int a = CurrentArmour;
+        int h = CurrentHealth;
+        // calc max a used (4 armour to every 1 health of damage)
+        float aUsed = damage / 5 * 4;
 
+        if (aUsed >= a)
+        {
+            aUsed = a;
+        }
+        CurrentArmour -= Convert.ToInt16(aUsed);
+
+        float hUsed = damage - aUsed;
+
+
+        if (h > hUsed)
+        {
+            // they survive
+            CurrentHealth -= Convert.ToInt16(hUsed);
+        }
+        else
+        {
+            this.Die();
+            return;
+        }
+
+        // add velocity
+        Vector3 dir = this.Transform.origin - inflictorTransform.origin;
+        dir = dir.Normalized();
+        dir = dir * damage;
+        this.playerVelocity += dir;
+    }
+
+    private void Die()
+    {
+        throw new NotImplementedException();
+        // death sound
+        // orientation change
+        // respawn on input
     }
 
     private void Shoot()
@@ -322,7 +360,7 @@ public class Player : KinematicBody
         if (ActiveAmmo >= ActiveWeapon.MinAmmoRequired)
         {
             // if weapon is off cooldown
-            if (ActiveWeapon.Shoot(camera, cameraCenter))
+            if (ActiveWeapon.Shoot(camera, cameraCenter, this))
             {
                 // modify current ammunition
                 ActiveAmmo -= ActiveWeapon.MinAmmoRequired;
