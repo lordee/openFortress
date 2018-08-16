@@ -59,12 +59,14 @@ _sections_unfolded = [ "Albedo" ]
 [sub_resource type="CubeMesh" id=3]
 
 material = SubResource( 2 )
+custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
 size = Vector3( 2, 2, 2 )
 subdivide_width = 0
 subdivide_height = 0
 subdivide_depth = 0
 
 [node name="RigidBody" type="RigidBody" index="0"]
+
 input_ray_pickable = true
 input_capture_on_drag = false
 collision_layer = 1
@@ -92,10 +94,12 @@ angular_velocity = Vector3( 0, 0, 0 )
 angular_damp = -1.0
 
 [node name="CollisionShape" type="CollisionShape" parent="." index="0"]
+
 shape = SubResource( 1 )
 disabled = false
 
 [node name="MeshInstance" type="MeshInstance" parent="." index="1"]
+
 layers = 1
 material_override = null
 cast_shadow = 1
@@ -108,4 +112,5 @@ lod_max_hysteresis = 0.0
 mesh = SubResource( 3 )
 skeleton = NodePath("..")
 material/0 = null
+
 

@@ -40,10 +40,8 @@ abstract public class Weapon : MeshInstance
     protected float _reloadTime;
     protected string _projectileResource;
     protected Projectile _projectileMesh;
-    protected PackedScene _projectileScene;
+    protected PackedScene _projectileScene;   
     
-    
-
     private Sprite3D muzzleFlash;
     private AudioStreamPlayer3D shootSound;
     private AudioStreamPlayer3D reloadSound;
@@ -206,7 +204,7 @@ abstract public class Weapon : MeshInstance
     }
     public bool Reloading = false;
 
-    public bool Shoot(Camera camera, Vector2 cameraCenter) 
+    public bool Shoot(Camera camera, Vector2 cameraCenter, Player p) 
     {
         bool shot = false;
         
@@ -232,11 +230,10 @@ abstract public class Weapon : MeshInstance
                     WeaponMesh.GetNode("/root/Main").AddChild(ProjectileMesh);
                     
                     Transform t = camera.GetGlobalTransform();
-                    ProjectileMesh.Init(t);
+                    ProjectileMesh.Init(t, p);
                 }
                 else 
                 {
-                    
                     PhysicsDirectSpaceState spaceState = GetWorld().DirectSpaceState;
                     // null should be self?
                     Vector3 shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
