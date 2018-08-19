@@ -104,12 +104,12 @@ abstract public class TFClass
 
         if (Weapon3 != null)
         {
-            //Weapon3.Spawn(camera, "Weapon3");
+            Weapon3.Spawn(camera, "Weapon3");
         }
 
         if (Weapon4 != null)
         {
-            //Weapon4.Spawn(camera, "Weapon4");
+            Weapon4.Spawn(camera, "Weapon4");
         }
     }
 }
@@ -161,9 +161,9 @@ public class Sniper : TFClass
     public Sniper()
     {
         _weapon1 = new SniperRifle();
-        _weapon2 = new AutoRifle();
-        _weapon3 = new NailGun();
-        _weapon4 = new Axe();
+        _weapon2 = new NailGun();
+        _weapon3 = new Axe();
+        _weapon4 = null;
         _gren1 = new FragGrenade();
         _gren2 = new Flare();
         _health = 85;
