@@ -1,11 +1,11 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://Assets/Models/Guns/shotgun.obj" type="ArrayMesh" id=1]
+[ext_resource path="res://Assets/Models/Guns/shotgunShort.obj" type="ArrayMesh" id=1]
 [ext_resource path="res://Assets/Sprites/muzzleflash/muzzleflash.png" type="Texture" id=2]
 [ext_resource path="res://Assets/Sounds/shots/shotgun.wav" type="AudioStream" id=3]
 [ext_resource path="res://Assets/Sounds/shots/pistol.wav" type="AudioStream" id=4]
 
-[node name="SuperShotgun" type="MeshInstance" index="0"]
+[node name="SuperShotgun" type="MeshInstance"]
 
 transform = Transform( -7, 0, -2.28089e-06, 0, 7, 0, 2.28089e-06, 0, -7, 0, 0, 0 )
 layers = 1
@@ -52,6 +52,13 @@ material/29 = null
 material/30 = null
 material/31 = null
 material/32 = null
+material/33 = null
+material/34 = null
+material/35 = null
+material/36 = null
+material/37 = null
+material/38 = null
+material/39 = null
 _sections_unfolded = [ "Transform" ]
 
 [node name="MuzzleFlash" type="Sprite3D" parent="." index="0"]
