@@ -1,13 +1,13 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://Assets/Models/Guns/machinegun.obj" type="ArrayMesh" id=1]
-[ext_resource path="res://Assets/Sounds/shots/cg1.wav" type="AudioStream" id=2]
-[ext_resource path="res://Assets/Sprites/muzzleflash/muzzleflash.png" type="Texture" id=3]
+[ext_resource path="res://Assets/Models/Guns/rocketlauncherModernRotating.obj" type="ArrayMesh" id=1]
+[ext_resource path="res://Assets/Sprites/muzzleflash/muzzleflash.png" type="Texture" id=2]
+[ext_resource path="res://Assets/Sounds/shots/rocket.wav" type="AudioStream" id=3]
 [ext_resource path="res://Assets/Sounds/shots/pistol.wav" type="AudioStream" id=4]
 
-[node name="MachineGun" type="MeshInstance" index="0"]
+[node name="PipebombLauncher" type="MeshInstance" index="0"]
 
-transform = Transform( -8, 2.60673e-06, 0, 2.60673e-06, 8, 2.60673e-06, 8.49381e-13, 2.60673e-06, -8, 0.497061, -0.490857, -0.921065 )
+transform = Transform( -7, 0, -2.28089e-06, 0, 7, 0, 2.28089e-06, 0, -7, 0, 0, 0 )
 layers = 1
 material_override = null
 cast_shadow = 1
@@ -63,33 +63,38 @@ material/40 = null
 material/41 = null
 material/42 = null
 material/43 = null
+material/44 = null
+material/45 = null
+material/46 = null
+material/47 = null
+material/48 = null
+material/49 = null
+material/50 = null
+material/51 = null
+material/52 = null
+material/53 = null
+material/54 = null
+material/55 = null
+material/56 = null
+material/57 = null
+material/58 = null
+material/59 = null
+material/60 = null
+material/61 = null
+material/62 = null
+material/63 = null
+material/64 = null
+material/65 = null
+material/66 = null
+material/67 = null
+material/68 = null
+material/69 = null
+material/70 = null
 _sections_unfolded = [ "Transform" ]
 
-[node name="ShootSound" type="AudioStreamPlayer3D" parent="." index="0"]
+[node name="MuzzleFlash" type="Sprite3D" parent="." index="0"]
 
-transform = Transform( -0.125, 4.07302e-08, 1.32716e-14, 4.07302e-08, 0.125, 4.07302e-08, 0, 4.07302e-08, -0.125, 0, 0, 0 )
-stream = ExtResource( 2 )
-attenuation_model = 0
-unit_db = 0.0
-unit_size = 1.0
-max_db = 3.0
-pitch_scale = 1.0
-autoplay = false
-max_distance = 0.0
-out_of_range_mode = 0
-bus = "Master"
-area_mask = 1
-emission_angle_enabled = false
-emission_angle_degrees = 45.0
-emission_angle_filter_attenuation_db = -12.0
-attenuation_filter_cutoff_hz = 5000.0
-attenuation_filter_db = -24.0
-doppler_tracking = 0
-_sections_unfolded = [ "Transform" ]
-
-[node name="MuzzleFlash" type="Sprite3D" parent="." index="1"]
-
-transform = Transform( 0.005, 7.54979e-10, -2.5411e-21, -7.54979e-10, 0.005, 0, -2.64698e-22, 0, -0.05, 0.00232688, 0.00684905, 0.0469985 )
+transform = Transform( 0.005, 0, 0, 0, 0.005, 0, 1.11022e-16, 0, 0.05, -1.56816e-08, 0.00909746, 0.0887458 )
 visible = false
 layers = 1
 material_override = null
@@ -112,16 +117,38 @@ transparent = true
 shaded = false
 double_sided = true
 alpha_cut = 0
-texture = ExtResource( 3 )
+texture = ExtResource( 2 )
 vframes = 1
 hframes = 1
 frame = 0
 region_enabled = false
 region_rect = Rect2( 0, 0, 0, 0 )
-_sections_unfolded = [ "Animation", "Flags", "Geometry", "Region", "Transform", "Visibility" ]
+_sections_unfolded = [ "Transform" ]
+
+[node name="ShootSound" type="AudioStreamPlayer3D" parent="." index="1"]
+
+transform = Transform( 0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.05, 8.88178e-16, 0.00717604, 0.0406193 )
+stream = ExtResource( 3 )
+attenuation_model = 0
+unit_db = 0.0
+unit_size = 1.0
+max_db = 3.0
+pitch_scale = 1.0
+autoplay = false
+max_distance = 0.0
+out_of_range_mode = 0
+bus = "Master"
+area_mask = 1
+emission_angle_enabled = false
+emission_angle_degrees = 45.0
+emission_angle_filter_attenuation_db = -12.0
+attenuation_filter_cutoff_hz = 5000.0
+attenuation_filter_db = -24.0
+doppler_tracking = 0
 
 [node name="ReloadSound" type="AudioStreamPlayer3D" parent="." index="2"]
 
+transform = Transform( 0.005, 0, 0, 0, 0.005, 0, 1.11022e-16, 0, 0.05, 1.77636e-15, 0.00717604, 0.0406193 )
 stream = ExtResource( 4 )
 attenuation_model = 0
 unit_db = 0.0

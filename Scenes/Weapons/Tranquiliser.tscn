@@ -1,0 +1,114 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Assets/Models/Guns/pistolSilencer.obj" type="ArrayMesh" id=1]
+[ext_resource path="res://Assets/Sprites/muzzleflash/muzzleflash.png" type="Texture" id=2]
+[ext_resource path="res://Assets/Sounds/shots/shotgun.wav" type="AudioStream" id=3]
+[ext_resource path="res://Assets/Sounds/shots/pistol.wav" type="AudioStream" id=4]
+
+[node name="Tranquiliser" type="MeshInstance" index="0"]
+
+transform = Transform( -7, 0, -2.28089e-06, 0, 7, 0, 2.28089e-06, 0, -7, 0, 0, 0 )
+layers = 1
+material_override = null
+cast_shadow = 1
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = ExtResource( 1 )
+skeleton = NodePath("..")
+material/0 = null
+material/1 = null
+material/2 = null
+material/3 = null
+material/4 = null
+material/5 = null
+material/6 = null
+material/7 = null
+material/8 = null
+material/9 = null
+material/10 = null
+material/11 = null
+material/12 = null
+material/13 = null
+material/14 = null
+_sections_unfolded = [ "Transform" ]
+
+[node name="MuzzleFlash" type="Sprite3D" parent="." index="0"]
+
+transform = Transform( 0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.05, 0, 0.00717604, 0.0406193 )
+visible = false
+layers = 1
+material_override = null
+cast_shadow = 1
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+centered = true
+offset = Vector2( 0, 0 )
+flip_h = false
+flip_v = false
+modulate = Color( 1, 1, 1, 1 )
+opacity = 1.0
+pixel_size = 0.01
+axis = 2
+transparent = true
+shaded = false
+double_sided = true
+alpha_cut = 0
+texture = ExtResource( 2 )
+vframes = 1
+hframes = 1
+frame = 0
+region_enabled = false
+region_rect = Rect2( 0, 0, 0, 0 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="ShootSound" type="AudioStreamPlayer3D" parent="." index="1"]
+
+transform = Transform( 0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.05, 8.88178e-16, 0.00717604, 0.0406193 )
+stream = ExtResource( 3 )
+attenuation_model = 0
+unit_db = 0.0
+unit_size = 1.0
+max_db = 3.0
+pitch_scale = 1.0
+autoplay = false
+max_distance = 0.0
+out_of_range_mode = 0
+bus = "Master"
+area_mask = 1
+emission_angle_enabled = false
+emission_angle_degrees = 45.0
+emission_angle_filter_attenuation_db = -12.0
+attenuation_filter_cutoff_hz = 5000.0
+attenuation_filter_db = -24.0
+doppler_tracking = 0
+
+[node name="ReloadSound" type="AudioStreamPlayer3D" parent="." index="2"]
+
+transform = Transform( 0.005, 0, 0, 0, 0.005, 0, 1.11022e-16, 0, 0.05, 1.77636e-15, 0.00717604, 0.0406193 )
+stream = ExtResource( 4 )
+attenuation_model = 0
+unit_db = 0.0
+unit_size = 1.0
+max_db = 3.0
+pitch_scale = 1.0
+autoplay = false
+max_distance = 0.0
+out_of_range_mode = 0
+bus = "Master"
+area_mask = 1
+emission_angle_enabled = false
+emission_angle_degrees = 45.0
+emission_angle_filter_attenuation_db = -12.0
+attenuation_filter_cutoff_hz = 5000.0
+attenuation_filter_db = -24.0
+doppler_tracking = 0
+
+
