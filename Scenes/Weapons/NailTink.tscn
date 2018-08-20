@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://Scripts/RocketExplosion.cs" type="Script" id=1]
+[ext_resource path="res://Scripts/NailTink.cs" type="Script" id=1]
 
 [sub_resource type="ParticlesMaterial" id=1]
 
@@ -75,7 +75,7 @@ anim_speed_random = 0.0
 anim_offset = 0.0
 anim_offset_random = 0.0
 anim_loop = false
-_sections_unfolded = [ "Color", "Emission Shape", "Gravity", "Initial Velocity" ]
+_sections_unfolded = [ "Animation", "Color", "Emission Shape", "Gravity", "Initial Velocity", "Spread" ]
 
 [sub_resource type="CubeMesh" id=3]
 
@@ -98,8 +98,8 @@ lod_min_hysteresis = 0.0
 lod_max_distance = 0.0
 lod_max_hysteresis = 0.0
 emitting = false
-amount = 50
-lifetime = 1.0
+amount = 5
+lifetime = 0.1
 one_shot = true
 preprocess = 0.0
 speed_scale = 2.0

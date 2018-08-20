@@ -77,6 +77,16 @@ abstract public class Weapon : MeshInstance
     }
 
     public int AmmoLeft;
+    public Ammunition AmmoType {
+        get { return _ammoType; }
+    }
+    public int MinAmmoRequired {
+        get { return _minAmmoRequired; }
+    }
+
+    public MeshInstance WeaponMesh {
+        get { return _weaponMesh; }
+    }
 
     public float TimeSinceLastShot
     {
@@ -377,7 +387,7 @@ public class NailGun : Weapon
         _ammoType = Ammunition.Nails;
         _projectile = true;
         _projectileResource = "res://Scenes/Weapons/Nail.tscn";
-        _projectileSpeed = 25;
+        _projectileSpeed = 40;
         _clipSize = -1;
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;
         _coolDown = 0.2f;

@@ -347,7 +347,6 @@ public class Player : KinematicBody
     {
         // if there's enough ammunition
         GD.Print("ActiveAmmo: " + ActiveAmmo);
-        GD.Print("ActiveWeapon.MinAmmoRequired: " + ActiveWeapon.MinAmmoRequired);
         if (ActiveAmmo >= ActiveWeapon.MinAmmoRequired)
         {
             // if weapon is off cooldown
