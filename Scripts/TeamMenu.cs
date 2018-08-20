@@ -38,7 +38,7 @@ public class TeamMenu : VBoxContainer
         Player p = (Player)GetNode("/root/Main/" + nodeName);
         p.TeamID = teamID;
 
-        PackedScene c = (PackedScene)ResourceLoader.Load("res://ClassMenu.tscn");
+        PackedScene c = (PackedScene)ResourceLoader.Load("res://Scenes/ClassMenu.tscn");
         ClassMenu c2 = (ClassMenu)c.Instance();
         Node main = GetNode("/root/Main/");
         main.AddChild(c2);

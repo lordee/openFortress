@@ -12,7 +12,7 @@ config_version=3
 
 config/name="openFortres"
 run/main_scene="res://Main.tscn"
-config/icon="res://icon.png"
+config/icon="res://Assets/icon.png"
 
 [input]
 
@@ -41,4 +41,4 @@ gren2=[ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"",
 
 [rendering]
 
-environment/default_environment="res://default_env.tres"
+environment/default_environment="res://Assets/Textures/default_env.tres"

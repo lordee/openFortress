@@ -10,11 +10,11 @@ public class Main : Node
 
     public override void _Ready()
     {
-        PackedScene playerScene = (PackedScene)ResourceLoader.Load("res://Player.tscn");
+        PackedScene playerScene = (PackedScene)ResourceLoader.Load("res://Scenes/Player.tscn");
         Player player = (Player)playerScene.Instance();
         this.AddChild(player);
 
-        PackedScene m = (PackedScene)ResourceLoader.Load("res://TeamMenu.tscn");
+        PackedScene m = (PackedScene)ResourceLoader.Load("res://Scenes/TeamMenu.tscn");
         TeamMenu m2 = (TeamMenu)m.Instance();
         this.AddChild(m2); 
         m2.Init(player.GetName());
