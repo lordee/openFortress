@@ -252,12 +252,6 @@ public class Player : KinematicBody
                 }
             }
 
-            // shooting
-            if (Input.IsActionPressed("attack"))
-            {
-                shooting = true;
-            }
-
             if (Input.IsActionJustPressed("slot1")) 
             {
                 ActiveWeapon = this.Class.Weapon1;
@@ -282,6 +276,12 @@ public class Player : KinematicBody
         
         if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
+            // shooting
+            if (Input.IsActionPressed("attack"))
+            {
+                this.Shoot();
+            }
+
             ActiveWeapon.PhysicsProcess(delta);
             QueueJump();
             if (touchingGround || climbLadder)
@@ -297,11 +297,6 @@ public class Player : KinematicBody
             touchingGround = IsOnFloor();     
             float speed = playerVelocity.Length();
             //GD.Print("Speed: " + speed.ToString());
-
-            if (shooting)
-            {
-                this.Shoot();
-            }
         }
     }
 
