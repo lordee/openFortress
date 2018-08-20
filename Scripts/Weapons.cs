@@ -41,6 +41,7 @@ abstract public class Weapon : MeshInstance
     protected string _projectileResource;
     protected Projectile _projectileMesh;
     protected PackedScene _projectileScene;   
+    protected int _projectileSpeed;
     
     private Sprite3D muzzleFlash;
     private AudioStreamPlayer3D shootSound;
@@ -58,80 +59,10 @@ abstract public class Weapon : MeshInstance
         this.TimeSinceReloaded += delta;
     }
 
-    public string Scene
-    {
-        get {
-            return _scene;
-        }
-    }
-
-    public string WeaponResource
-    {
-        get {
-            return _weaponResource;
-        }
-    }
-
-    public MeshInstance WeaponMesh
-    {
-        get {
-            return _weaponMesh;
-        }
-        set {
-            _weaponMesh = value;
-        }
-    }
-
-    public string ProjectileResource
-    {
-        get {
-            return _projectileResource;
-        }
-    }
-
-    public PackedScene ProjectileScene
-    {
-        get {
-            return _projectileScene;
-        }
-        set {
-            _projectileScene = value;
-        }
-    }
-
-    public Projectile ProjectileMesh
-    {
-        get {
-            return _projectileMesh;
-        }
-        set {
-            _projectileMesh = value;
-        }
-    }
-
     public Vector3 SpawnTranslation
     {
         get {
             return new Vector3(.5f, -.5f, -.9f);
-        }
-    }
-    public int Damage
-    {
-        get {
-            return _damage;
-        }
-    }
-
-    public int MinAmmoRequired
-    {
-        get {
-            return _minAmmoRequired;
-        }
-    }
-    public Ammunition AmmoType
-    {
-        get {
-            return _ammoType;
         }
     }
 
@@ -141,14 +72,7 @@ abstract public class Weapon : MeshInstance
             return _clipLeft;
         }
         set {
-            _clipLeft = ClipSize == -1 ? 999 : value;
-        }
-    }
-
-    public int ClipSize
-    {
-        get {
-            return _clipSize;
+            _clipLeft = _clipSize == -1 ? 999 : value;
         }
     }
 
@@ -168,20 +92,6 @@ abstract public class Weapon : MeshInstance
         }
     }
 
-    public float CoolDown
-    {
-        get {
-            return _coolDown;
-        }
-    }
-
-    public bool Projectile
-    {
-        get {
-            return _projectile;
-        }
-    }
-
     public float TimeSinceReloaded
     {
         get {
@@ -189,19 +99,13 @@ abstract public class Weapon : MeshInstance
         }
         set {
             _timeSinceReloaded = value;
-            if (_timeSinceReloaded > ReloadTime && this.Reloading)
+            if (_timeSinceReloaded > _reloadTime && this.Reloading)
             {
                 this.Reload(true);
             }
         }
     }
 
-    public float ReloadTime
-    {
-        get {
-            return _reloadTime;
-        }
-    }
     public bool Reloading = false;
 
     public bool Shoot(Camera camera, Vector2 cameraCenter, Player p) 
@@ -209,14 +113,14 @@ abstract public class Weapon : MeshInstance
         bool shot = false;
         
         // if enough ammunition in clip
-        if (ClipLeft >= MinAmmoRequired)
+        if (ClipLeft >= _minAmmoRequired)
         {
             // if weapon has hit cooldown
-            if (TimeSinceLastShot >= CoolDown)
+            if (TimeSinceLastShot >= _coolDown)
             {
                 this.TimeSinceLastShot = 0f;
-                ClipLeft -= MinAmmoRequired;
-                GD.Print("ClipSize: " + ClipSize);
+                ClipLeft -= _minAmmoRequired;
+                GD.Print("ClipSize: " + _clipSize);
                 GD.Print("ClipLeft: " + ClipLeft);
                 // fire either hitscan or projectile
                 if (muzzleFlash != null)
@@ -224,16 +128,16 @@ abstract public class Weapon : MeshInstance
                     muzzleFlash.Show();
                 }
                 shootSound.Play();
-                if (Projectile)
+                if (_projectile)
                 {
                     // spawn projectile, set it moving
-                    ProjectileMesh = (Projectile)ProjectileScene.Instance();
-                                      
+                    _projectileMesh = (Projectile)_projectileScene.Instance();
+                    
                     // add to scene
-                    WeaponMesh.GetNode("/root/Main").AddChild(ProjectileMesh);
+                    _weaponMesh.GetNode("/root/Main").AddChild(_projectileMesh);
                     
                     Transform t = camera.GetGlobalTransform();
-                    ProjectileMesh.Init(t, p);
+                    _projectileMesh.Init(t, p, _projectileSpeed, _damage);
                 }
                 else 
                 {
@@ -278,14 +182,14 @@ abstract public class Weapon : MeshInstance
         if (reloadFinished)
         {
             GD.Print("Reloaded");
-            WeaponMesh.SetVisible(true);
-            this.ClipLeft = this.AmmoLeft < this.ClipSize ? this.AmmoLeft : this.ClipSize;
+            _weaponMesh.SetVisible(true);
+            _clipLeft = this.AmmoLeft < _clipSize ? this.AmmoLeft : _clipSize;
             this.Reloading = false;
         } else 
         {
             GD.Print("Reloading...");
             reloadSound.Play();
-            WeaponMesh.SetVisible(false);
+            _weaponMesh.SetVisible(false);
             this.TimeSinceReloaded = 0f;
             this.Reloading = true;
         }
@@ -293,26 +197,26 @@ abstract public class Weapon : MeshInstance
 
     public void Spawn(Node camera, string Name)
     {
-        PackedScene PackedScene = (PackedScene)ResourceLoader.Load(WeaponResource);
-        WeaponMesh = (MeshInstance)PackedScene.Instance();
-        camera.AddChild(WeaponMesh);
-        WeaponMesh.Translation = this.SpawnTranslation;
-        WeaponMesh.SetName(Name);
-        WeaponMesh.SetVisible(false);
-        shootSound = (AudioStreamPlayer3D)WeaponMesh.GetNode("ShootSound");
-        if (WeaponMesh.HasNode("MuzzleFlash"))
+        PackedScene PackedScene = (PackedScene)ResourceLoader.Load(_weaponResource);
+        _weaponMesh = (MeshInstance)PackedScene.Instance();
+        camera.AddChild(_weaponMesh);
+        _weaponMesh.Translation = this.SpawnTranslation;
+        _weaponMesh.SetName(Name);
+        _weaponMesh.SetVisible(false);
+        shootSound = (AudioStreamPlayer3D)_weaponMesh.GetNode("ShootSound");
+        if (_weaponMesh.HasNode("MuzzleFlash"))
         {
-            muzzleFlash = (Sprite3D)WeaponMesh.GetNode("MuzzleFlash");
+            muzzleFlash = (Sprite3D)_weaponMesh.GetNode("MuzzleFlash");
         }
-        if (WeaponMesh.HasNode("ReloadSound"))
+        if (_weaponMesh.HasNode("ReloadSound"))
         {
-            reloadSound = (AudioStreamPlayer3D)WeaponMesh.GetNode("ReloadSound");
+            reloadSound = (AudioStreamPlayer3D)_weaponMesh.GetNode("ReloadSound");
         }
         
         // projectile mesh
-        if (Projectile)
+        if (_projectile)
         {
-            ProjectileScene = (PackedScene)ResourceLoader.Load(ProjectileResource);
+            _projectileScene = (PackedScene)ResourceLoader.Load(_projectileResource);
         }
         
         GD.Print("Loaded " + Name);
@@ -468,8 +372,15 @@ public class NailGun : Weapon
         GD.Print("NailGun");
         _damage = 15;
         _minAmmoRequired = 1;
-        _ammoType = Ammunition.Nails;
         _weaponResource = "res://Scenes/Weapons/NailGun.tscn";
+
+        _ammoType = Ammunition.Nails;
+        _projectile = true;
+        _projectileResource = "res://Scenes/Weapons/Nail.tscn";
+        _projectileSpeed = 25;
+        _clipSize = -1;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
+        _coolDown = 0.2f;
     }
 }
 
@@ -484,13 +395,12 @@ public class SniperRifle : Weapon
     }
 }
 
-public class SuperNailGun : Weapon
+public class SuperNailGun : NailGun
 {
     public SuperNailGun() {
         GD.Print("SuperNailGun");
         _damage = 30;
         _minAmmoRequired = 2;
-        _ammoType = Ammunition.Nails;
         _weaponResource = "res://Scenes/Weapons/SuperNailGun.tscn";
     }
 }
@@ -526,6 +436,8 @@ public class RocketLauncher : Weapon
         _weaponResource = "res://Scenes/Weapons/RocketLauncher.tscn";
         _projectile = true;
         _projectileResource = "res://Scenes/Weapons/Rocket.tscn";
+        _projectileSpeed = 25;
+        _damage = 100;
         _clipSize = 4;
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;
         _coolDown = 1.0f;
