@@ -56,6 +56,7 @@ public class Projectile : KinematicBody
         this.SetTranslation(this.GetTranslation() + init);
         _particleScene = (PackedScene)ResourceLoader.Load(ParticleResource);
         _playerOwner = pOwner;
+        this.AddCollisionExceptionWith(pOwner);
     }
 
     public override void _PhysicsProcess(float delta)
