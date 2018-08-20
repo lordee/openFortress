@@ -23,6 +23,14 @@ public enum Ammunition
     Axe
 }
 
+public enum WeaponType
+{
+    Melee,
+    Spread,
+    Hitscan,
+    Projectile,
+}
+
 abstract public class Weapon : MeshInstance
 {
     protected int _damage;
@@ -35,18 +43,19 @@ abstract public class Weapon : MeshInstance
     protected int _clipLeft;
     protected float _timeSinceLastShot;
     protected float _coolDown;
-    protected bool _projectile = false;
     protected float _timeSinceReloaded;
     protected float _reloadTime;
     protected string _projectileResource;
     protected Projectile _projectileMesh;
     protected PackedScene _projectileScene;   
     protected int _projectileSpeed;
+    protected WeaponType _weaponType;
+    protected float _shootRange = 0f;
     
     private Sprite3D muzzleFlash;
     private AudioStreamPlayer3D shootSound;
     private AudioStreamPlayer3D reloadSound;
-    private float ShootRange = 1000f;
+    
     Node MainNode;
 
     public Weapon() {
@@ -138,39 +147,44 @@ abstract public class Weapon : MeshInstance
                     muzzleFlash.Show();
                 }
                 shootSound.Play();
-                if (_projectile)
+                switch (_weaponType)
                 {
-                    // spawn projectile, set it moving
-                    _projectileMesh = (Projectile)_projectileScene.Instance();
-                    
-                    // add to scene
-                    _weaponMesh.GetNode("/root/Main").AddChild(_projectileMesh);
-                    
-                    Transform t = camera.GetGlobalTransform();
-                    _projectileMesh.Init(t, p, _projectileSpeed, _damage);
-                }
-                else 
-                {
-                    PhysicsDirectSpaceState spaceState = p.GetWorld().DirectSpaceState;
-                    // null should be self?
-                    Vector3 shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
-                    Vector3 shootNormal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * ShootRange;
-                    Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
+                    case WeaponType.Hitscan:
+                    case WeaponType.Melee:
+                        PhysicsDirectSpaceState spaceState = p.GetWorld().DirectSpaceState;
+                        // null should be self?
+                        Vector3 shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
+                        Vector3 shootNormal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * _shootRange;
+                        Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
 
-                    Vector3 impulse;
-                    Vector3 impact_position;
-                    if (result.Count > 0)
-                    {
-                        impact_position = (Vector3)result["position"];
-                        impulse = (impact_position - (Vector3)p.GlobalTransform.origin).Normalized();
-                        
-                        if (result["collider"] is RigidBody c)
+                        Vector3 impulse;
+                        Vector3 impact_position;
+                        if (result.Count > 0)
                         {
-                            Vector3 position = impact_position - c.GlobalTransform.origin;
-                            c.ApplyImpulse(position, impulse * 10);
+                            impact_position = (Vector3)result["position"];
+                            impulse = (impact_position - (Vector3)p.GlobalTransform.origin).Normalized();
+                            
+                            if (result["collider"] is RigidBody c)
+                            {
+                                Vector3 position = impact_position - c.GlobalTransform.origin;
+                                c.ApplyImpulse(position, impulse * 10);
+                            }
                         }
-                    }
+                    break;
+                    case WeaponType.Projectile:
+                        // spawn projectile, set it moving
+                        _projectileMesh = (Projectile)_projectileScene.Instance();
+                        
+                        // add to scene
+                        _weaponMesh.GetNode("/root/Main").AddChild(_projectileMesh);
+                        
+                        Transform t = camera.GetGlobalTransform();
+                        _projectileMesh.Init(t, p, _projectileSpeed, _damage);
+                    break;
+                    case WeaponType.Spread:
+                    break;
                 }
+                
                 shot = true;
             }
             else
@@ -224,7 +238,7 @@ abstract public class Weapon : MeshInstance
         }
         
         // projectile mesh
-        if (_projectile)
+        if (_weaponType == WeaponType.Projectile)
         {
             _projectileScene = (PackedScene)ResourceLoader.Load(_projectileResource);
         }
@@ -343,6 +357,8 @@ public class Axe : Weapon
         _ammoType = Ammunition.Axe;
         _weaponResource = "res://Scenes/Weapons/Axe.tscn";
         _coolDown = 0.5f;
+        _weaponType = WeaponType.Melee;
+        _shootRange = 10f;
     }
 }
 
@@ -358,6 +374,8 @@ public class Shotgun : Weapon
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;
         _coolDown = 1.0f;
         _reloadTime = 4.0f;
+        _weaponType = WeaponType.Spread;
+        _shootRange = 100f;
     }
 }
 
@@ -373,6 +391,8 @@ public class SuperShotgun : Weapon
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;
         _coolDown = 1.0f;
         _reloadTime = 4.0f;
+        _weaponType = WeaponType.Spread;
+        _shootRange = 100f;
     }
 }
 
@@ -385,12 +405,12 @@ public class NailGun : Weapon
         _weaponResource = "res://Scenes/Weapons/NailGun.tscn";
 
         _ammoType = Ammunition.Nails;
-        _projectile = true;
         _projectileResource = "res://Scenes/Weapons/Nail.tscn";
         _projectileSpeed = 40;
         _clipSize = -1;
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;
         _coolDown = 0.2f;
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -402,6 +422,8 @@ public class SniperRifle : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
         _weaponResource = "res://Scenes/Weapons/SniperRifle.tscn";
+        _weaponType = WeaponType.Hitscan;
+        _shootRange = 100f;
     }
 }
 
@@ -412,6 +434,7 @@ public class SuperNailGun : NailGun
         _damage = 30;
         _minAmmoRequired = 2;
         _weaponResource = "res://Scenes/Weapons/SuperNailGun.tscn";
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -423,6 +446,7 @@ public class GrenadeLauncher : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
         _weaponResource = "res://Scenes/Weapons/GrenadeLauncher.tscn";
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -434,6 +458,7 @@ public class PipebombLauncher : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
         _weaponResource = "res://Scenes/Weapons/PipebombLauncher.tscn";
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -444,7 +469,6 @@ public class RocketLauncher : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
         _weaponResource = "res://Scenes/Weapons/RocketLauncher.tscn";
-        _projectile = true;
         _projectileResource = "res://Scenes/Weapons/Rocket.tscn";
         _projectileSpeed = 25;
         _damage = 100;
@@ -452,6 +476,7 @@ public class RocketLauncher : Weapon
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;
         _coolDown = 1.0f;
         _reloadTime = 4.0f;
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -463,6 +488,8 @@ public class Syringe : Weapon
         _minAmmoRequired = 0;
         _ammoType = Ammunition.Axe;
         _weaponResource = "res://Scenes/Weapons/Syringe.tscn";
+        _weaponType = WeaponType.Melee;
+        _shootRange = 10f;
     }
 }
 
@@ -474,6 +501,8 @@ public class MiniGun : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
         _weaponResource = "res://Scenes/Weapons/MiniGun.tscn";
+        _weaponType = WeaponType.Spread;
+        _shootRange = 100f;
     }
 }
 
@@ -485,6 +514,8 @@ public class FlameThrower : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Cells;
         _weaponResource = "res://Scenes/Weapons/FlameThrower.tscn";
+        _weaponType = WeaponType.Projectile;
+        _shootRange = 10f;
     }
 }
 
@@ -496,6 +527,7 @@ public class PyroLauncher : Weapon
         _minAmmoRequired = 3;
         _ammoType = Ammunition.Rockets;
         _weaponResource = "res://Scenes/Weapons/PyroLauncher.tscn";
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -507,6 +539,7 @@ public class Tranquiliser : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
         _weaponResource = "res://Scenes/Weapons/Tranquiliser.tscn";
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -518,6 +551,8 @@ public class Knife : Weapon
         _minAmmoRequired = 0;
         _ammoType = Ammunition.Axe;
         _weaponResource = "res://Scenes/Weapons/Knife.tscn";
+        _weaponType = WeaponType.Melee;
+        _shootRange = 10f;
     }
 }
 
@@ -529,6 +564,7 @@ public class RailGun : Weapon
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Nails;
         _weaponResource = "res://Scenes/Weapons/RailGun.tscn";
+        _weaponType = WeaponType.Projectile;
     }
 }
 
@@ -540,6 +576,8 @@ public class Spanner : Weapon
         _minAmmoRequired = 0;
         _ammoType = Ammunition.Axe;
         _weaponResource = "res://Scenes/Weapons/Spanner.tscn";
+        _weaponType = WeaponType.Melee;
+        _shootRange = 10f;
     }
 }
 
