@@ -253,13 +253,9 @@ public class Player : KinematicBody
             }
 
             // shooting
-            if (e is InputEventMouseButton emb && e.IsPressed())
+            if (Input.IsActionPressed("attack"))
             {
-                // TODO change this to a command later
-                if (emb.ButtonIndex == 1)
-                {
-                    shooting = true;
-                }
+                shooting = true;
             }
 
             if (Input.IsActionJustPressed("slot1")) 
