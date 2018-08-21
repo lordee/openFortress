@@ -286,7 +286,8 @@ abstract public class Weapon : MeshInstance
             _weaponMesh.SetVisible(true);
             _clipLeft = this.AmmoLeft < _clipSize ? this.AmmoLeft : _clipSize;
             this.Reloading = false;
-        } else 
+        } 
+        else if (!this.Reloading)
         {
             GD.Print("Reloading...");
             reloadSound.Play();
@@ -505,6 +506,9 @@ public class SniperRifle : Weapon
         _weaponResource = "res://Scenes/Weapons/SniperRifle.tscn";
         _weaponType = WeaponType.Hitscan;
         _shootRange = 100f;
+        _clipSize = 1;
+        _reloadTime = 2f;
+        _coolDown = 0f;
     }
 }
 
