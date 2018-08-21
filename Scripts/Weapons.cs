@@ -58,9 +58,8 @@ abstract public class Weapon : MeshInstance
     protected WeaponType _weaponType;
     protected float _shootRange = 0f;
     
-    // spread weapons only
     protected Vector3 _spread; 
-    protected float _pelletCount;
+    protected float _pelletCount = 1;
     
     private Sprite3D muzzleFlash;
     private AudioStreamPlayer3D shootSound;
@@ -165,8 +164,6 @@ abstract public class Weapon : MeshInstance
                 }
                 shootSound.Play();
                 
-                
-                
                 switch (_weaponType)
                 {
                     case WeaponType.Hitscan:
@@ -191,6 +188,29 @@ abstract public class Weapon : MeshInstance
                                 GD.Print("dir: " + newTo);
 
                                 Tuple<Vector3, PuffType, Node, KinematicBody, float> data = this.DoHit(spaceState, shootOrigin, newTo, shooter);
+                                if (data != null)
+                                {
+                                    if (data.Item1 != null)
+                                    {
+                                        puffList.Add(new Tuple<Vector3, PuffType, Node>(data.Item1, data.Item2, data.Item3));
+                                    }
+                                    
+                                    if (data.Item4 != null)
+                                    {
+                                        hitList.Add(data.Item4, data.Item5);
+                                    }
+                                }
+                                
+                                pc -= 1;
+                            }
+                        }
+                        else
+                        {
+                            Vector3 newTo = shootTo + shootOrigin;
+                            Tuple<Vector3, PuffType, Node, KinematicBody, float> data = this.DoHit(spaceState, shootOrigin, newTo, shooter);
+
+                            if (data != null)
+                            {
                                 if (data.Item1 != null)
                                 {
                                     puffList.Add(new Tuple<Vector3, PuffType, Node>(data.Item1, data.Item2, data.Item3));
@@ -200,22 +220,6 @@ abstract public class Weapon : MeshInstance
                                 {
                                     hitList.Add(data.Item4, data.Item5);
                                 }
-                                pc -= 1;
-                            }
-                        }
-                        else
-                        {
-                            Vector3 newTo = shootTo + shootOrigin;
-                            Tuple<Vector3, PuffType, Node, KinematicBody, float> data = this.DoHit(spaceState, shootOrigin, newTo, shooter);
-
-                            if (data.Item1 != null)
-                            {
-                                puffList.Add(new Tuple<Vector3, PuffType, Node>(data.Item1, data.Item2, data.Item3));
-                            }
-                            
-                            if (data.Item4 != null)
-                            {
-                                hitList.Add(data.Item4, data.Item5);
                             }
                         }
 
@@ -284,38 +288,39 @@ abstract public class Weapon : MeshInstance
     private Tuple<Vector3, PuffType, Node, KinematicBody, float> DoHit(PhysicsDirectSpaceState spaceState, Vector3 shootOrigin, Vector3 shootTo, Player shooter)
     {
         Tuple<Vector3, PuffType, Node, KinematicBody, float> hitData = null;
-        
         Dictionary<object, object> res = spaceState.IntersectRay(shootOrigin, shootTo, new object[] { this, shooter }, 1);
-
-        Vector3 pos = (Vector3)res["position"];
-        PuffType puff;
-        Node colNode = null;
-        KinematicBody hit = null;
-        float dam = 0;
-        // track if collides, track puff counts
-        // leave this for fun
-        if (res["collider"] is RigidBody rb)
-        {           
-            Vector3 impulse = (pos - shooter.GlobalTransform.origin).Normalized();
-            Vector3 position = pos - rb.GlobalTransform.origin;
-            rb.ApplyImpulse(position, impulse * 10);
-
-            puff = PuffType.Puff;
-            colNode = (Node)rb;
-        } 
-        else if (res["collider"] is KinematicBody kb)
+        if (res.Count > 0)
         {
-            hit = kb;
-            dam = _damage / _pelletCount;
-            puff = PuffType.Blood;
-            colNode = (Node)kb;
+            Vector3 pos = (Vector3)res["position"];
+            PuffType puff;
+            Node colNode = null;
+            KinematicBody hit = null;
+            float dam = 0;
+            // track if collides, track puff counts
+            // leave this for fun
+            if (res["collider"] is RigidBody rb)
+            {           
+                Vector3 impulse = (pos - shooter.GlobalTransform.origin).Normalized();
+                Vector3 position = pos - rb.GlobalTransform.origin;
+                rb.ApplyImpulse(position, impulse * 10);
+
+                puff = PuffType.Puff;
+                colNode = (Node)rb;
+            } 
+            else if (res["collider"] is KinematicBody kb)
+            {
+                hit = kb;
+                dam = _damage / _pelletCount;
+                puff = PuffType.Blood;
+                colNode = (Node)kb;
+            }
+            else
+            {
+                puff = PuffType.Puff;
+            }
+            
+            hitData = new Tuple<Vector3, PuffType, Node, KinematicBody, float>(pos, puff, colNode, hit, dam);
         }
-        else
-        {
-            puff = PuffType.Puff;
-        }
-        
-        hitData = new Tuple<Vector3, PuffType, Node, KinematicBody, float>(pos, puff, colNode, hit, dam);
 
         return hitData;
     }
