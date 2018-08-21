@@ -324,7 +324,7 @@ public class Player : KinematicBody
         }
         else
         {
-            this.Die();
+            this.Die(inflictorType, attacker);
             return;
         }
 
@@ -335,12 +335,13 @@ public class Player : KinematicBody
         this.playerVelocity += dir;
     }
 
-    private void Die()
+    private void Die(string inflictorType, Player attacker)
     {
         throw new NotImplementedException();
         // death sound
         // orientation change
         // respawn on input
+        // log the death
     }
 
     private void Shoot()
