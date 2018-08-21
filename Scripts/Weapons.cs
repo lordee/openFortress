@@ -584,6 +584,11 @@ public class MiniGun : Weapon
         _weaponResource = "res://Scenes/Weapons/MiniGun.tscn";
         _weaponType = WeaponType.Spread;
         _shootRange = 100f;
+        _coolDown = 0.1f;
+        _clipSize = -1;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
+        _pelletCount = 14;
+        _spread = new Vector3(.14f, .08f, 0f);
     }
 }
 
