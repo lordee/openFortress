@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Scripts\Nail.cs" />
     <Compile Include="Scripts\NailTink.cs" />
+    <Compile Include="Scripts\Puff.cs" />
     <Compile Include="Scripts\RocketExplosion.cs" />
     <Compile Include="Scripts\ClassMenu.cs" />
     <Compile Include="Scripts\Classes.cs" />

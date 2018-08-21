@@ -31,6 +31,12 @@ public enum WeaponType
     Projectile,
 }
 
+public enum PuffType
+{
+    Blood,
+    Puff
+}
+
 abstract public class Weapon : MeshInstance
 {
     protected int _damage;
@@ -52,13 +58,24 @@ abstract public class Weapon : MeshInstance
     protected WeaponType _weaponType;
     protected float _shootRange = 0f;
     
+    // spread weapons only
+    protected Vector3 _spread; 
+    protected float _pelletCount;
+    
     private Sprite3D muzzleFlash;
     private AudioStreamPlayer3D shootSound;
     private AudioStreamPlayer3D reloadSound;
+
+    string puffResource = "res://Scenes/Weapons/Puff.tscn";
+    string bloodResource = "res://Scenes/Weapons/BloodPuff.tscn";
+    PackedScene puffScene;
+    PackedScene bloodScene;
     
     Node MainNode;
 
     public Weapon() {
+        puffScene = (PackedScene)ResourceLoader.Load(puffResource);
+        bloodScene = (PackedScene)ResourceLoader.Load(bloodResource);
     }
 
     // make our own physics process because we do everything via script
@@ -127,7 +144,7 @@ abstract public class Weapon : MeshInstance
 
     public bool Reloading = false;
 
-    public bool Shoot(Camera camera, Vector2 cameraCenter, Player p) 
+    public bool Shoot(Camera camera, Vector2 cameraCenter, Player shooter) 
     {
         bool shot = false;
         
@@ -151,24 +168,86 @@ abstract public class Weapon : MeshInstance
                 {
                     case WeaponType.Hitscan:
                     case WeaponType.Melee:
-                        PhysicsDirectSpaceState spaceState = p.GetWorld().DirectSpaceState;
+                        PhysicsDirectSpaceState spaceState = shooter.GetWorld().DirectSpaceState;
                         // null should be self?
                         Vector3 shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
                         Vector3 shootNormal = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * _shootRange;
-                        Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootNormal, new object[] { this }, 1);
+                        Dictionary<object, object> result = spaceState.IntersectRay(shootOrigin, shootOrigin - shootNormal, new object[] { this }, 1);
 
                         Vector3 impulse;
                         Vector3 impact_position;
                         if (result.Count > 0)
                         {
                             impact_position = (Vector3)result["position"];
-                            impulse = (impact_position - (Vector3)p.GlobalTransform.origin).Normalized();
+                            impulse = (impact_position - (Vector3)shooter.GlobalTransform.origin).Normalized();
                             
                             if (result["collider"] is RigidBody c)
                             {
                                 Vector3 position = impact_position - c.GlobalTransform.origin;
                                 c.ApplyImpulse(position, impulse * 10);
                             }
+                        }
+                    break;
+                    case WeaponType.Spread:
+                        PhysicsDirectSpaceState dss = shooter.GetWorld().DirectSpaceState;
+                        Vector3 from = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
+                        Vector3 to = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * _shootRange;
+                        float pc = _pelletCount;
+                        Dictionary<KinematicBody, float> hitList = new Dictionary<KinematicBody, float>();
+                        List<Tuple<Vector3, PuffType>> puffList = new List<Tuple<Vector3, PuffType>>();
+                        Random ran = new Random();
+                        float random = 0f;
+                        while (pc > 0)
+                        {
+                            random = (float)ran.Next(0,100);
+                            GD.Print("random: " + random);
+                            Vector3 direction = new Vector3((from.x + to.x) + random * _spread.x, (from.y + to.y) + random * _spread.y, from.z + to.z);
+                            GD.Print("dir: " + direction);
+                            Dictionary<object, object> res = dss.IntersectRay(from, direction, new object[] { this, shooter }, 1);
+                            // track if collides, track puff counts
+                            if (res["collider"] is KinematicBody c)
+                            {
+                                if (hitList.ContainsKey(c))
+                                {
+                                    hitList[c] += _damage / _pelletCount;
+                                }
+                                else
+                                {
+                                    hitList.Add(c, _damage / _pelletCount);
+                                }
+                                puffList.Add(new Tuple<Vector3, PuffType>((Vector3)res["position"], PuffType.Blood));
+                            }
+                            else
+                            {
+                                puffList.Add(new Tuple<Vector3, PuffType>((Vector3)res["position"], PuffType.Puff));
+                            }
+                            
+                            pc -= 1;
+                        }
+
+                        // apply damage
+                        foreach(KinematicBody kb in hitList.Keys)
+                        {
+                            Player hit = (Player)kb;
+                            hit.TakeDamage(shooter.Transform, this.GetType().ToString(), shooter, hitList[kb]);
+                        }
+                        // do puff particles and blood particles
+                        foreach (Tuple<Vector3, PuffType> puff in puffList)
+                        {
+                            Particles puffPart = null;
+                            switch (puff.Item2)
+                            {
+                                case PuffType.Blood:
+                                    puffPart = (Particles)bloodScene.Instance();
+                                break;
+                                case PuffType.Puff:
+                                    puffPart = (Particles)puffScene.Instance();
+                                break;
+                            }
+
+                            puffPart.SetTranslation(puff.Item1);
+                            _weaponMesh.GetNode("/root/Main").AddChild(puffPart);
+                            puffPart.Emitting = true;
                         }
                     break;
                     case WeaponType.Projectile:
@@ -179,9 +258,7 @@ abstract public class Weapon : MeshInstance
                         _weaponMesh.GetNode("/root/Main").AddChild(_projectileMesh);
                         
                         Transform t = camera.GetGlobalTransform();
-                        _projectileMesh.Init(t, p, _projectileSpeed, _damage);
-                    break;
-                    case WeaponType.Spread:
+                        _projectileMesh.Init(t, shooter, _projectileSpeed, _damage);
                     break;
                 }
                 
@@ -376,6 +453,8 @@ public class Shotgun : Weapon
         _reloadTime = 4.0f;
         _weaponType = WeaponType.Spread;
         _shootRange = 100f;
+        _pelletCount = 6;
+        _spread = new Vector3(.04f, .04f, 0f);
     }
 }
 
@@ -393,6 +472,8 @@ public class SuperShotgun : Weapon
         _reloadTime = 4.0f;
         _weaponType = WeaponType.Spread;
         _shootRange = 100f;
+        _pelletCount = 14;
+        _spread = new Vector3(.14f, .08f, 0f);
     }
 }
 
