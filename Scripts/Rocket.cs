@@ -8,6 +8,6 @@ public class Rocket : Projectile
         _particleResource = "res://Scenes/Weapons/RocketExplosion.tscn";
         _areaOfEffect = true;
         _areaOfEffectRadius = 5;
-        _projectileType = "rocket";
+        _projectileType = "Rocket";
     }
 }

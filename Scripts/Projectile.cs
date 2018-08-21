@@ -50,10 +50,6 @@ public class Projectile : KinematicBody
             {
                 if (pl != this._playerOwner)
                 {
-                    GD.Print("direct hit");
-                    GD.Print(pl.GetName());
-                    GD.Print(this._playerOwner.GetName());
-                    
                     pl.TakeDamage(this.Transform, _projectileType, _playerOwner, damage);
 
                     this.FindRadius(pl, damage);
