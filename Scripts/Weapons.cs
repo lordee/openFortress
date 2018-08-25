@@ -151,7 +151,6 @@ abstract public class Weapon : MeshInstance
     public bool Shoot(Camera camera, Vector2 cameraCenter, Player shooter) 
     {
         bool shot = false;
-        
         // if enough ammunition in clip
         if (ClipLeft >= _minAmmoRequired)
         {
@@ -637,16 +636,12 @@ public class RocketLauncher : Weapon
     }
 }
 
-public class Syringe : Weapon
+public class Syringe : Axe
 {
     public Syringe() {
         GD.Print("Syringe");
         _damage = 10;
-        _minAmmoRequired = 0;
-        _ammoType = Ammunition.Axe;
         _weaponResource = "res://Scenes/Weapons/Syringe.tscn";
-        _weaponType = WeaponType.Melee;
-        _shootRange = 10f;
     }
 }
 
@@ -705,16 +700,12 @@ public class Tranquiliser : Weapon
     }
 }
 
-public class Knife : Weapon
+public class Knife : Axe
 {
     public Knife() {
         GD.Print("Knife");
         _damage = 100;
-        _minAmmoRequired = 0;
-        _ammoType = Ammunition.Axe;
         _weaponResource = "res://Scenes/Weapons/Knife.tscn";
-        _weaponType = WeaponType.Melee;
-        _shootRange = 10f;
     }
 }
 
@@ -730,16 +721,12 @@ public class RailGun : Weapon
     }
 }
 
-public class Spanner : Weapon
+public class Spanner : Axe
 {
     public Spanner() {
         GD.Print("Spanner");
         _damage = 25;
-        _minAmmoRequired = 0;
-        _ammoType = Ammunition.Axe;
         _weaponResource = "res://Scenes/Weapons/Spanner.tscn";
-        _weaponType = WeaponType.Melee;
-        _shootRange = 10f;
     }
 }
 
