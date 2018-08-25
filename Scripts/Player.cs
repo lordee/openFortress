@@ -165,6 +165,13 @@ public class Player : KinematicBody
     private int _currentCells = 0;
     private int _currentGren1 = 0;
     private int _currentGren2 = 0;
+    private int CurrentCells {
+        get { return _currentCells; }
+        set {
+            _currentCells = value;
+            // update gui too
+        }
+    }
     
     private int _activeAmmo;
     private int ActiveAmmo
@@ -395,19 +402,29 @@ public class Player : KinematicBody
         }
     }
 
-    public void Heal(Weapon Inflictor)
+    public void Heal(Player attacker, Weapon inflictor)
     {
-        switch (Inflictor.GetType().ToString().ToLower())
+        switch (inflictor.GetType().ToString().ToLower())
         {
             case "syringe":
                 _diseasedBy.Clear();
-                if (CurrentHealth < 100)
+                if (this.CurrentHealth < 100)
                 {
-                    CurrentHealth = 100;
+                    this.CurrentHealth = 100;
                 }
                 else
                 {
-                    CurrentHealth = 150;
+                    this.CurrentHealth = 150;
+                }
+            break;
+            case "spanner":
+                if (this.CurrentArmour < this.Class.Armour)
+                {
+                    int maxToHeal = this.CurrentArmour + 40 > this.Class.Armour ? this.Class.Armour - this.CurrentArmour : 40;
+                    int toHeal = attacker.CurrentCells >= maxToHeal / 4 ? maxToHeal : attacker.CurrentCells * 4;
+
+                    this.CurrentArmour += toHeal;
+                    attacker.CurrentCells -= toHeal / 4;
                 }
             break;
         }

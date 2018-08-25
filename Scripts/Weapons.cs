@@ -236,15 +236,12 @@ abstract public class Weapon : MeshInstance
                         foreach(KinematicBody kb in hitList.Keys)
                         {
                             Player hit = (Player)kb;
-                            if (this.GetType().ToString().ToLower() == "syringe")
+                            if (hit.TeamID == shooter.TeamID)
                             {
-                                if (hit.TeamID == shooter.TeamID)
+                                if (this.GetType().ToString().ToLower() == "syringe"
+                                || this.GetType().ToString().ToLower() == "spanner")
                                 {
-                                    hit.Heal(this);
-                                }
-                                else
-                                {
-                                    hit.TakeDamage(shooter.Transform, this, shooter, hitList[kb]);
+                                    hit.Heal(shooter, this);
                                 }
                             }
                             else
@@ -739,11 +736,18 @@ public class RailGun : Weapon
 {
     public RailGun() {
         GD.Print("RailGun");
-        _damage = 20;
+        _damage = 40;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Nails;
         _weaponResource = "res://Scenes/Weapons/RailGun.tscn";
         _weaponType = WeaponType.Projectile;
+
+        _ammoType = Ammunition.Nails;
+        _projectileResource = "res://Scenes/Weapons/Nail.tscn";
+        _projectileSpeed = 60;
+        _clipSize = -1;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
+        _coolDown = .5f;
     }
 }
 
@@ -753,6 +757,7 @@ public class Spanner : Axe
         GD.Print("Spanner");
         _damage = 25;
         _weaponResource = "res://Scenes/Weapons/Spanner.tscn";
+        _ammoType = Ammunition.Cells;
     }
 }
 
