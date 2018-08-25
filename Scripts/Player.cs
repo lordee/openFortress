@@ -13,10 +13,13 @@ public class Player : KinematicBody
 {
     float mouseSensitivity = 0.2f;
     float cameraAngle = 0F;
+
+    private int _pipebombLimit = 7;
+
     // physics
-    public float gravity = 20.0f;
-    public float friction = 6;
-    public float groundSnapTolerance = 1.0f;
+    private float gravity = 27.0f;
+    private float friction = 6;
+    private float groundSnapTolerance = 1.0f;
     private Vector3 up = new Vector3(0,1,0);
     // stairs
     float maxStairAngle = 20F;
@@ -193,6 +196,10 @@ public class Player : KinematicBody
             }
         }
     }
+    private List<Pipebomb> _activePipebombs = new List<Pipebomb>();
+    public List<Pipebomb> ActivePipebombs {
+        get { return _activePipebombs; }
+    }
         
     bool climbLadder = false;
     bool firstEnter = true; // bug? on first load, body entered is called
@@ -252,6 +259,7 @@ public class Player : KinematicBody
                 }
             }
 
+            // is this best way to check actions?
             if (Input.IsActionJustPressed("slot1")) 
             {
                 ActiveWeapon = this.Class.Weapon1;
@@ -268,6 +276,10 @@ public class Player : KinematicBody
             {
                 ActiveWeapon = this.Class.Weapon4;
             }
+            else if (Input.IsActionJustPressed("detpipe"))
+            {
+                this.Detpipe();
+            }
         }
     }
 
@@ -280,7 +292,7 @@ public class Player : KinematicBody
             if (Input.IsActionPressed("attack"))
             {
                 this.Shoot();
-            }
+            }          
 
             ActiveWeapon.PhysicsProcess(delta);
             QueueJump();
@@ -297,6 +309,38 @@ public class Player : KinematicBody
             touchingGround = IsOnFloor();     
             float speed = playerVelocity.Length();
             //GD.Print("Speed: " + speed.ToString());
+        }
+    }
+
+    public void AddActivePipebomb(Pipebomb p)
+    {
+        if (_activePipebombs.Count >= _pipebombLimit)
+        {
+            // get oldest and explode
+            _activePipebombs[0].Explode(null, p.WeaponOwner.Damage);
+            _activePipebombs.Remove(_activePipebombs[0]);
+        }
+        _activePipebombs.Add(p);
+    }
+
+    private void Detpipe()
+    {
+        bool det = false;
+        if (_activePipebombs.Count > 0)
+        {
+            Pipebomb test = _activePipebombs[0];
+            if (test.WeaponOwner.TimeSinceLastShot >= .3f)
+            {
+                det = true;
+            }
+        }
+        if (det)
+        {
+            foreach (Pipebomb p in _activePipebombs)
+            {
+                p.Explode(null, p.WeaponOwner.Damage);
+            }
+            _activePipebombs.Clear();
         }
     }
 

@@ -13,13 +13,19 @@ public class Projectile : KinematicBody
     protected bool _areaOfEffect;
     protected float _areaOfEffectRadius;
     protected string _projectileType;
-    private Player _playerOwner;
+    protected Player _playerOwner;
+    protected Weapon _weaponOwner;
+    public Weapon WeaponOwner
+    {
+        get { return _weaponOwner; }
+    }
+    protected float _currentSpeed;
 
     public Projectile()
     {
     }
 
-    public void Init(Transform t, Player pOwner, int speed, float damage)
+    public void Init(Transform t, Player pOwner, Weapon wOwner, int speed, float damage)
     {       
         this.Transform = t;
         Vector3 init = new Vector3();
@@ -28,44 +34,44 @@ public class Projectile : KinematicBody
         this.SetTranslation(this.GetTranslation() + init);
         _particleScene = (PackedScene)ResourceLoader.Load(_particleResource);
         _playerOwner = pOwner;
+        _weaponOwner = wOwner;
         _speed = speed;
+        _currentSpeed = _speed;
         _damage = damage;
+        _projectileType = this.GetType().ToString();
+        _direction -= this.Transform.basis.z;
+        _direction = _direction.Normalized();
         this.AddCollisionExceptionWith(pOwner);
     }
 
     public override void _PhysicsProcess(float delta)
     {
-        _direction -= this.Transform.basis.z;
-        _direction = _direction.Normalized();
         Vector3 vel = _direction * _speed;
         Vector3 motion = vel * delta;
         KinematicCollision c = this.MoveAndCollide(motion);
-        Random ran = new Random();
-        float damage = _damage + ran.Next(0,20);
-
+        
         if (c != null)
         {
+            Random ran = new Random();
+            float damage = _damage + ran.Next(0,20);
             // if c collider is kinematic body (direct hit)
             if (c.Collider is Player pl)
             {
                 if (pl != this._playerOwner)
                 {
                     pl.TakeDamage(this.Transform, _projectileType, _playerOwner, damage);
-
-                    this.FindRadius(pl, damage);
-                    this.Explode();
+                    this.Explode(pl, damage);
                 }
             }
             else {
-                
-                this.FindRadius(null, damage);
-                this.Explode();
+                this.Explode(null, damage);
             }
         }
     }
 
-    private void Explode()
+    public void Explode(Player ignore, float damage)
     {
+        this.FindRadius(ignore, damage);
         Particles p = (Particles)_particleScene.Instance();
         p.Transform = this.Transform;
         GetNode("/root/Main").AddChild(p);
@@ -75,9 +81,8 @@ public class Projectile : KinematicBody
         GetTree().QueueDelete(this);
     }
 
-    private void FindRadius(Player ignore, float damage)
+    protected void FindRadius(Player ignore, float damage)
     {
-
         // test for radius damage
         SphereShape s = new SphereShape();
         s.SetRadius(_areaOfEffectRadius);

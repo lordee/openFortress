@@ -29,6 +29,7 @@ public enum WeaponType
     Spread,
     Hitscan,
     Projectile,
+    Grenade
 }
 
 public enum PuffType
@@ -40,6 +41,10 @@ public enum PuffType
 abstract public class Weapon : MeshInstance
 {
     protected int _damage;
+    public int Damage 
+    {
+        get { return _damage; }
+    }
     protected string _weaponResource;
     protected MeshInstance _weaponMesh;
     protected string _scene;
@@ -258,6 +263,7 @@ abstract public class Weapon : MeshInstance
                         }
                     break;
                     case WeaponType.Projectile:
+                    case WeaponType.Grenade:
                         // spawn projectile, set it moving
                         _projectileMesh = (Projectile)_projectileScene.Instance();
                         
@@ -265,7 +271,13 @@ abstract public class Weapon : MeshInstance
                         _weaponMesh.GetNode("/root/Main").AddChild(_projectileMesh);
                         
                         Transform t = camera.GetGlobalTransform();
-                        _projectileMesh.Init(t, shooter, _projectileSpeed, _damage);
+                        _projectileMesh.Init(t, shooter, this, _projectileSpeed, _damage);
+
+                        if (_projectileMesh is Pipebomb p)
+                        {
+                            // track against player
+                            shooter.AddActivePipebomb(p);
+                        }
                     break;
                 }
 
@@ -363,7 +375,7 @@ abstract public class Weapon : MeshInstance
         }
         
         // projectile mesh
-        if (_weaponType == WeaponType.Projectile)
+        if (_weaponType == WeaponType.Projectile || _weaponType == WeaponType.Grenade)
         {
             _projectileScene = (PackedScene)ResourceLoader.Load(_projectileResource);
         }
@@ -556,6 +568,7 @@ public class SniperRifle : Weapon
         _clipSize = 1;
         _reloadTime = 2f;
         _coolDown = 0f;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
     }
 }
 
@@ -574,11 +587,17 @@ public class GrenadeLauncher : Weapon
 {
     public GrenadeLauncher() {
         GD.Print("GrenadeLauncher");
-        _damage = 100;
+        _damage = 120;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
         _weaponResource = "res://Scenes/Weapons/GrenadeLauncher.tscn";
-        _weaponType = WeaponType.Projectile;
+        _projectileResource = "res://Scenes/Weapons/Grenade.tscn";
+        _projectileSpeed = 40;
+        _weaponType = WeaponType.Grenade;
+        _clipSize = 6;
+        _coolDown = 0.6f;
+        _reloadTime = 4.0f;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
     }
 }
 
@@ -586,11 +605,17 @@ public class PipebombLauncher : Weapon
 {
     public PipebombLauncher() {
         GD.Print("PipebombLauncher");
-        _damage = 100;
+        _damage = 120;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Rockets;
         _weaponResource = "res://Scenes/Weapons/PipebombLauncher.tscn";
-        _weaponType = WeaponType.Projectile;
+        _projectileResource = "res://Scenes/Weapons/Pipebomb.tscn";
+        _projectileSpeed = 40;
+        _weaponType = WeaponType.Grenade;
+        _clipSize = 6;
+        _coolDown = 0.6f;
+        _reloadTime = 4.0f;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
     }
 }
 
@@ -602,7 +627,7 @@ public class RocketLauncher : Weapon
         _ammoType = Ammunition.Rockets;
         _weaponResource = "res://Scenes/Weapons/RocketLauncher.tscn";
         _projectileResource = "res://Scenes/Weapons/Rocket.tscn";
-        _projectileSpeed = 25;
+        _projectileSpeed = 40;
         _damage = 100;
         _clipSize = 4;
         _clipLeft = _clipSize == -1 ? 999 : _clipSize;

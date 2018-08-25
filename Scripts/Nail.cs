@@ -7,6 +7,5 @@ public class Nail : Projectile
     {
         _particleResource = "res://Scenes/Weapons/NailTink.tscn";
         _areaOfEffect = false;
-        _projectileType = "nail";
     }
 }
