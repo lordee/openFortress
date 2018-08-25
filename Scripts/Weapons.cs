@@ -236,7 +236,21 @@ abstract public class Weapon : MeshInstance
                         foreach(KinematicBody kb in hitList.Keys)
                         {
                             Player hit = (Player)kb;
-                            hit.TakeDamage(shooter.Transform, this, shooter, hitList[kb]);
+                            if (this.GetType().ToString().ToLower() == "syringe")
+                            {
+                                if (hit.TeamID == shooter.TeamID)
+                                {
+                                    hit.Heal(this);
+                                }
+                                else
+                                {
+                                    hit.TakeDamage(shooter.Transform, this, shooter, hitList[kb]);
+                                }
+                            }
+                            else
+                            {
+                                hit.TakeDamage(shooter.Transform, this, shooter, hitList[kb]);
+                            }
                         }
 
                         // do puff particles and blood particles
@@ -647,6 +661,7 @@ public class Syringe : Axe
         GD.Print("Syringe");
         _damage = 10;
         _weaponResource = "res://Scenes/Weapons/Syringe.tscn";
+        _inflictLength = 1f;
     }
 }
 

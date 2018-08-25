@@ -9,6 +9,20 @@ struct Cmd
     public float move_up;
 }
 
+class DiseasedData
+{
+    public Player Attacker;
+    public float TimeSinceDiseased;
+    public Weapon Inflictor;
+
+    public DiseasedData(Player attacker, Weapon inflictor, float timeSinceDiseased)
+    {
+        Attacker = attacker;
+        TimeSinceDiseased = timeSinceDiseased;
+        Inflictor = inflictor;
+    }
+}
+
 public class Player : KinematicBody
 {
     float mouseSensitivity = 0.2f;
@@ -40,6 +54,9 @@ public class Player : KinematicBody
             _timeSinceTranquilised = 0f;
         }
     }
+
+    private List<DiseasedData> _diseasedBy = new List<DiseasedData>();
+    private float _diseasedInterval = 0f;
 
     // physics
     private float gravity = 27.0f;
@@ -313,7 +330,14 @@ public class Player : KinematicBody
         if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
             TimeSinceTranquilised += delta;
-
+            foreach (DiseasedData dd in _diseasedBy)
+            {
+                dd.TimeSinceDiseased += delta;
+                if (dd.TimeSinceDiseased >= _diseasedInterval)
+                {
+                    this.TakeDamage(this.Transform, dd.Inflictor ,dd.Attacker, dd.Inflictor.Damage);
+                }
+            }
 
             // shooting
             if (Input.IsActionPressed("attack"))
@@ -371,15 +395,36 @@ public class Player : KinematicBody
         }
     }
 
+    public void Heal(Weapon Inflictor)
+    {
+        switch (Inflictor.GetType().ToString().ToLower())
+        {
+            case "syringe":
+                _diseasedBy.Clear();
+                if (CurrentHealth < 100)
+                {
+                    CurrentHealth = 100;
+                }
+                else
+                {
+                    CurrentHealth = 150;
+                }
+            break;
+        }
+    }
+
     public void TakeDamage(Transform inflictorTransform, Weapon inflictorType, Player attacker, float damage)
     {
         // special stuff
         switch (inflictorType.GetType().ToString().ToLower())
         {
             case "tranquiliser":
-                _tranquilised = true;
-                _timeSinceTranquilised = 0f;
+                this.Tranquilised = true;
                 _tranquilisedLength = inflictorType.InflictLength;
+            break;
+            case "syringe":
+                _diseasedBy.Add(new DiseasedData(attacker, inflictorType, 0f));
+                _diseasedInterval = inflictorType.InflictLength;
             break;
         }
 
