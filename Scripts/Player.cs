@@ -16,6 +16,31 @@ public class Player : KinematicBody
 
     private int _pipebombLimit = 7;
 
+    // states
+    private float _tranquilisedLength = 0f;
+    private bool _tranquilised = false;
+    private float _timeSinceTranquilised = 0f;
+    public float TimeSinceTranquilised {
+        get { return _timeSinceTranquilised; }
+        set {
+            _timeSinceTranquilised = value;
+            if (_tranquilised)
+            {
+                if (_timeSinceTranquilised >= _tranquilisedLength)
+                {
+                    Tranquilised = false;
+                }
+            }
+        }
+    }
+    public bool Tranquilised {
+        get { return _tranquilised; }
+        set {
+            _tranquilised = value;
+            _timeSinceTranquilised = 0f;
+        }
+    }
+
     // physics
     private float gravity = 27.0f;
     private float friction = 6;
@@ -285,9 +310,11 @@ public class Player : KinematicBody
 
     public override void _PhysicsProcess(float delta)
     {
-        
         if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
+            TimeSinceTranquilised += delta;
+
+
             // shooting
             if (Input.IsActionPressed("attack"))
             {
@@ -344,8 +371,18 @@ public class Player : KinematicBody
         }
     }
 
-    public void TakeDamage(Transform inflictorTransform, string inflictorType, Player attacker, float damage)
+    public void TakeDamage(Transform inflictorTransform, Weapon inflictorType, Player attacker, float damage)
     {
+        // special stuff
+        switch (inflictorType.GetType().ToString().ToLower())
+        {
+            case "tranquiliser":
+                _tranquilised = true;
+                _timeSinceTranquilised = 0f;
+                _tranquilisedLength = inflictorType.InflictLength;
+            break;
+        }
+
         // take from armour and health
         int a = CurrentArmour;
         int h = CurrentHealth;
@@ -379,7 +416,7 @@ public class Player : KinematicBody
         this.playerVelocity += dir;
     }
 
-    private void Die(string inflictorType, Player attacker)
+    private void Die(Weapon inflictorType, Player attacker)
     {
         throw new NotImplementedException();
         // death sound
@@ -464,11 +501,10 @@ public class Player : KinematicBody
         wishdir -= aim.z * _cmd.move_forward;
 
         float wishspeed = wishdir.Length();
-        wishspeed *= moveSpeed;
+        wishspeed *= _tranquilised ? moveSpeed / 2 : moveSpeed;
 
         wishdir = wishdir.Normalized();
         moveDirectionNorm = wishdir;
-        //wishspeed *= scale;
 
         // CPM: Aircontrol
         float wishspeed2 = wishspeed;
@@ -566,7 +602,7 @@ public class Player : KinematicBody
         moveDirectionNorm = wishDir;
 
         float wishSpeed = wishDir.Length();
-        wishSpeed *= moveSpeed;
+        wishSpeed *= _tranquilised ? moveSpeed / 2 : moveSpeed;
         Accelerate(wishDir, wishSpeed, runAcceleration, delta);
        
         if (climbLadder)
@@ -677,7 +713,7 @@ public class Player : KinematicBody
             return 0;
 
         total = Mathf.Sqrt(_cmd.move_forward * _cmd.move_forward + _cmd.move_right * _cmd.move_right);
-        scale = moveSpeed * max / (moveScale * total);
+        scale = (_tranquilised ? moveSpeed / 2 : moveSpeed) * max / (moveScale * total);
 
         return scale;
     }

@@ -62,6 +62,10 @@ abstract public class Weapon : MeshInstance
     protected int _projectileSpeed;
     protected WeaponType _weaponType;
     protected float _shootRange = 0f;
+    protected float _inflictLength = 0f;
+    public float InflictLength {
+        get { return _inflictLength; }
+    }
     
     protected Vector3 _spread; 
     protected float _pelletCount = 1;
@@ -155,7 +159,8 @@ abstract public class Weapon : MeshInstance
         if (ClipLeft >= _minAmmoRequired)
         {
             // if weapon has hit cooldown
-            if (TimeSinceLastShot >= _coolDown)
+            if (!shooter.Tranquilised && TimeSinceLastShot >= _coolDown
+                || shooter.Tranquilised && TimeSinceLastShot >= _coolDown * 2)
             {
                 this.TimeSinceLastShot = 0f;
                 ClipLeft -= _minAmmoRequired;
@@ -231,7 +236,7 @@ abstract public class Weapon : MeshInstance
                         foreach(KinematicBody kb in hitList.Keys)
                         {
                             Player hit = (Player)kb;
-                            hit.TakeDamage(shooter.Transform, this.GetType().ToString(), shooter, hitList[kb]);
+                            hit.TakeDamage(shooter.Transform, this, shooter, hitList[kb]);
                         }
 
                         // do puff particles and blood particles
@@ -692,11 +697,17 @@ public class Tranquiliser : Weapon
 {
     public Tranquiliser() {
         GD.Print("Tranquiliser");
-        _damage = 10;
+        _damage = 25;
         _minAmmoRequired = 1;
         _ammoType = Ammunition.Shells;
         _weaponResource = "res://Scenes/Weapons/Tranquiliser.tscn";
         _weaponType = WeaponType.Projectile;
+        _projectileResource = "res://Scenes/Weapons/Nail.tscn";
+        _projectileSpeed = 40;
+        _clipSize = -1;
+        _clipLeft = _clipSize == -1 ? 999 : _clipSize;
+        _coolDown = 2.0f;
+        _inflictLength = 4.0f;
     }
 }
 

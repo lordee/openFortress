@@ -12,7 +12,6 @@ public class Projectile : KinematicBody
     private PackedScene _particleScene;
     protected bool _areaOfEffect;
     protected float _areaOfEffectRadius;
-    protected string _projectileType;
     protected Player _playerOwner;
     protected Weapon _weaponOwner;
     public Weapon WeaponOwner
@@ -38,7 +37,6 @@ public class Projectile : KinematicBody
         _speed = speed;
         _currentSpeed = _speed;
         _damage = damage;
-        _projectileType = this.GetType().ToString();
         _direction -= this.Transform.basis.z;
         _direction = _direction.Normalized();
         this.AddCollisionExceptionWith(pOwner);
@@ -57,9 +55,10 @@ public class Projectile : KinematicBody
             // if c collider is kinematic body (direct hit)
             if (c.Collider is Player pl)
             {
+                // i think this isn't needed anymore thanks to addcollisionexceptionwith
                 if (pl != this._playerOwner)
                 {
-                    pl.TakeDamage(this.Transform, _projectileType, _playerOwner, damage);
+                    pl.TakeDamage(this.Transform, _weaponOwner, _playerOwner, damage);
                     this.Explode(pl, damage);
                 }
             }
@@ -71,7 +70,11 @@ public class Projectile : KinematicBody
 
     public void Explode(Player ignore, float damage)
     {
-        this.FindRadius(ignore, damage);
+        if (_areaOfEffect)
+        {
+            this.FindRadius(ignore, damage);
+        }
+        
         Particles p = (Particles)_particleScene.Instance();
         p.Transform = this.Transform;
         GetNode("/root/Main").AddChild(p);
@@ -119,7 +122,7 @@ public class Projectile : KinematicBody
                     }
                     GD.Print("inflicted dam: " + d);
                     // inflict damage
-                    pl.TakeDamage(this.Transform, this._projectileType, this._playerOwner, d);
+                    pl.TakeDamage(this.Transform, _weaponOwner, this._playerOwner, d);
                 }
             }
         }
