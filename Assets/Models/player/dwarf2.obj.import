@@ -1,0 +1,17 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/dwarf2.obj-ab255441cf3e77bb472266fe0a87200a.mesh"
+
+[deps]
+
+files=[ "res://.import/dwarf2.obj-ab255441cf3e77bb472266fe0a87200a.mesh" ]
+
+source_file="res://Assets/Models/player/dwarf2.obj"
+dest_files=[ "res://.import/dwarf2.obj-ab255441cf3e77bb472266fe0a87200a.mesh", "res://.import/dwarf2.obj-ab255441cf3e77bb472266fe0a87200a.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )

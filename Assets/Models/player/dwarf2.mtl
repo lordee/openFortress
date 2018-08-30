@@ -1,0 +1,83 @@
+# Blender MTL File: 'fixed no platform.blend'
+# Material Count: 6
+
+newmtl armor_material
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.094700 0.094700 0.094700
+Ks 0.406504 0.406504 0.406504
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd untitled
+map_Bump -bm -1.000000 /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/normal/normal3.png
+map_Ks /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/diff/spec.png
+refl /home/danni/Code/Godot Projects/openFortress/Assets/Models/mapping/textures/env.jpg
+
+newmtl body_material
+Ns 27.450980
+Ka 1.000000 1.000000 1.000000
+Kd 0.796748 0.796748 0.796748
+Ks 0.000000 0.000000 0.000000
+Ke 0.010000 0.010000 0.010000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd b_color.png
+map_Bump -bm -0.555555 /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/normal/BODY_normal_002.png
+map_Ks /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/diff/bidy_diff13_spec.png
+refl /home/danni/Code/Godot Projects/openFortress/Assets/Models/mapping/textures/env.jpg
+
+newmtl body_material_b_normal
+Ns 27.450980
+Ka 1.000000 1.000000 1.000000
+Kd 0.796748 0.796748 0.796748
+Ks 0.000000 0.000000 0.000000
+Ke 0.010000 0.010000 0.010000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd /home/danni/Code/Godot Projects/openFortress/Assets/Models/dwarf/tex/normal/BODY_normal_002.png
+map_Bump -bm -0.555555 /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/normal/BODY_normal_002.png
+map_Ks /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/diff/bidy_diff13_spec.png
+refl /home/danni/Code/Godot Projects/openFortress/Assets/Models/mapping/textures/env.jpg
+
+newmtl cloth_mat
+Ns 37.254902
+Ka 1.000000 1.000000 1.000000
+Kd 0.296947 0.368732 0.479987
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Bump -bm -0.400000 /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/normal/cloth_n_001_green.png
+map_Kd c_color.png
+refl /home/danni/Code/Godot Projects/openFortress/Assets/Models/mapping/textures/env.jpg
+
+newmtl leather_mat
+Ns 27.450980
+Ka 1.000000 1.000000 1.000000
+Kd 0.053197 0.053994 0.056387
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd untitled
+map_Bump -bm -0.300000 /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/normal/pas_normal_05.png
+refl /home/danni/Code/Godot Projects/openFortress/Assets/Models/mapping/textures/env.jpg
+
+newmtl leather_mat_NONE
+Ns 27.450980
+Ka 1.000000 1.000000 1.000000
+Kd 0.053197 0.053994 0.056387
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Bump -bm -0.300000 /home/danni/Code/Godot Projects/openFortress/Assets/Models/tex/normal/pas_normal_05.png
+map_Kd l_color.png
+refl /home/danni/Code/Godot Projects/openFortress/Assets/Models/mapping/textures/env.jpg
