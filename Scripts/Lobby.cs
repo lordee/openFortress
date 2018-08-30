@@ -22,18 +22,19 @@ public class Lobby : Control
         GetTree().Connect("server_disconnected", this, "_Server_Disconnected");
     }
 
-    // Network callbacks from SceneTree ####
+    // Network callbacks from SceneTree
 
     // callback from SceneTree
     private void _Player_Connected(int id)
     {
         // someone connected, start the game!
 	    PackedScene main = (PackedScene)ResourceLoader.Load("res://Scenes/Main.tscn");
-        Spatial inst = (Spatial)main.Instance();
+        Node inst = (Node)main.Instance();
+        Node of = GetNode("/root/OpenFortress");
+        of.AddChild(inst);
         // connect deferred so we can safely erase it from the callback
-	    inst.Connect("game_finished", this, "_End_Game", null, 1);
+	    //inst.Connect("game_finished", this, "_End_Game", null, 1);
 	
-        GetTree().GetRoot().AddChild(inst);
         this.Hide();
     }
 
@@ -73,10 +74,11 @@ public class Lobby : Control
         _End_Game("Server disconnected");
     }
 	
-    // Game creation functions ######
+    // Game creation functions
 
     private void _End_Game(string with_error)
     {
+        /* 
         Node pong = GetNode("/root/pong");
         if (pong != null)
         {
@@ -85,7 +87,8 @@ public class Lobby : Control
             pong.Free();
             Show();
         }
-
+        */
+        
         // remove peer
         GetTree().SetNetworkPeer(null);
 
