@@ -49,6 +49,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Scripts\Lobby.cs" />
+    <Compile Include="Scripts\Network.cs" />
     <Compile Include="Scripts\Grenade.cs" />
     <Compile Include="Scripts\Nail.cs" />
     <Compile Include="Scripts\NailTink.cs" />

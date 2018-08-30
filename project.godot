@@ -11,7 +11,7 @@ config_version=3
 [application]
 
 config/name="openFortres"
-run/main_scene="res://Main.tscn"
+run/main_scene="res://Scenes/Lobby.tscn"
 config/icon="res://Assets/icon.png"
 
 [input]
