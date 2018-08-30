@@ -271,7 +271,7 @@ abstract public class Weapon : MeshInstance
                             }
                             else
                             {
-                                _weaponMesh.GetNode("/root/Main").AddChild(puffPart);
+                                _weaponMesh.GetNode("/root/OpenFortress/Main").AddChild(puffPart);
                             }
                             
                             puffPart.Emitting = true;
@@ -283,7 +283,7 @@ abstract public class Weapon : MeshInstance
                         _projectileMesh = (Projectile)_projectileScene.Instance();
                         
                         // add to scene
-                        _weaponMesh.GetNode("/root/Main").AddChild(_projectileMesh);
+                        _weaponMesh.GetNode("/root/OpenFortress/Main").AddChild(_projectileMesh);
                         
                         Transform t = camera.GetGlobalTransform();
                         _projectileMesh.Init(t, shooter, this, _projectileSpeed, _damage);

@@ -16,7 +16,7 @@ public class ChangeClass : VBoxContainer
     private void SetClass(string c)
     {
         Client.playerClass = c;
-        Server s = (Server)GetNode("/root/Main/Server");
+        Server s = (Server)GetNode("/root/OpenFortress/Main/Server");
         s.SpawnPlayer(Client);
         Client.Player.SetInMenu(false);
         GetTree().QueueDelete(this);

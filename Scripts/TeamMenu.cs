@@ -35,12 +35,12 @@ public class TeamMenu : VBoxContainer
 
     public void JoinTeam(int teamID, string nodeName)
     {
-        Player p = (Player)GetNode("/root/Main/" + nodeName);
+        Player p = (Player)GetNode("/root/OpenFortress/Main/" + nodeName);
         p.TeamID = teamID;
 
         PackedScene c = (PackedScene)ResourceLoader.Load("res://Scenes/ClassMenu.tscn");
         ClassMenu c2 = (ClassMenu)c.Instance();
-        Node main = GetNode("/root/Main/");
+        Node main = GetNode("/root/OpenFortress/Main/");
         main.AddChild(c2);
         c2.Init(nodeName);
 

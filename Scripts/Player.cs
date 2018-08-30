@@ -96,7 +96,7 @@ public class Player : KinematicBody
         get {
             if (_mainNode == null)
             {
-                _mainNode = (Main)GetNode("/root/Main");
+                _mainNode = (Main)GetNode("/root/OpenFortress/Main");
             }
             return _mainNode;
         }
@@ -266,8 +266,8 @@ public class Player : KinematicBody
         head = (Spatial)GetNode("Head");
         camera = (Camera)head.GetNode("Camera");
         stairCatcher = (RayCast)GetNode("StairCatcher");
-        HealthLabel = (Label)GetNode("/root/Main/UI/HealthLabel");
-        ArmourLabel = (Label)GetNode("/root/Main/UI/ArmourLabel");
+        HealthLabel = (Label)GetNode("/root/OpenFortress/Main/UI/HealthLabel");
+        ArmourLabel = (Label)GetNode("/root/OpenFortress/Main/UI/ArmourLabel");
         cameraCenter.x = OS.GetWindowSize().x / 2;
         cameraCenter.y = OS.GetWindowSize().y / 2;
 

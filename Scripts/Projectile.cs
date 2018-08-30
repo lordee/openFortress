@@ -77,7 +77,7 @@ public class Projectile : KinematicBody
         
         Particles p = (Particles)_particleScene.Instance();
         p.Transform = this.Transform;
-        GetNode("/root/Main").AddChild(p);
+        GetNode("/root/OpenFortress/Main").AddChild(p);
         p.Emitting = true;
         
         // remove projectile

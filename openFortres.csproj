@@ -54,6 +54,7 @@
     <Compile Include="Scripts\Grenade.cs" />
     <Compile Include="Scripts\Nail.cs" />
     <Compile Include="Scripts\NailTink.cs" />
+    <Compile Include="Scripts\OpenFortress.cs" />
     <Compile Include="Scripts\Pipebomb.cs" />
     <Compile Include="Scripts\Puff.cs" />
     <Compile Include="Scripts\RocketExplosion.cs" />

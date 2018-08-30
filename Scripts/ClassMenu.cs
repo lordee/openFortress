@@ -19,7 +19,7 @@ public class ClassMenu : VBoxContainer
 
     private void _on_Button_Pressed(Button b, string nodeName)
     {
-        Player p = (Player)GetNode("/root/Main/" + nodeName);
+        Player p = (Player)GetNode("/root/OpenFortress/Main/" + nodeName);
 
         switch (b.Name)
         {
