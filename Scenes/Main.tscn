@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=2]
+[gd_scene load_steps=31 format=2]
 
 [ext_resource path="res://Scripts/Main.cs" type="Script" id=1]
 [ext_resource path="res://Assets/Textures/noon_grass_2k.hdr" type="Texture" id=2]
@@ -11,6 +11,7 @@
 [ext_resource path="res://Assets/Sprites/Crosshair 1.png" type="Texture" id=9]
 [ext_resource path="res://Scenes/cube.tscn" type="PackedScene" id=10]
 [ext_resource path="res://Scenes/UI.tscn" type="PackedScene" id=11]
+[ext_resource path="res://Scripts/Network.cs" type="Script" id=12]
 
 [sub_resource type="PanoramaSky" id=1]
 
@@ -325,7 +326,7 @@ subdivide_depth = 0
 
 data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1 )
 
-[node name="Main" type="Spatial" index="0"]
+[node name="Main" type="Spatial"]
 
 script = ExtResource( 1 )
 _sections_unfolded = [ "Transform", "Visibility" ]
@@ -582,5 +583,9 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 12, -20 )
 _sections_unfolded = [ "Transform" ]
 
 [node name="UI" parent="." index="12" instance=ExtResource( 11 )]
+
+[node name="Network" type="Node" parent="." index="13"]
+
+script = ExtResource( 12 )
 
 
