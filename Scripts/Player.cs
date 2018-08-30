@@ -61,7 +61,6 @@ public class Player : KinematicBody
     // physics
     private float gravity = 27.0f;
     private float friction = 6;
-    private float groundSnapTolerance = 1.0f;
     private Vector3 up = new Vector3(0,1,0);
     // stairs
     float maxStairAngle = 20F;
@@ -254,14 +253,11 @@ public class Player : KinematicBody
     bool firstEnter = true; // bug? on first load, body entered is called
 
     // shooting
-    float shootRange = 1000F;
     Vector2 cameraCenter;
-    private bool shooting = false;
 
     // bunnyhopping
     private bool wishJump = false;
     private bool touchingGround = false;
-    private float playerTopVelocity = 0.0f;
 
     public override void _Ready()
     {
@@ -504,7 +500,6 @@ public class Player : KinematicBody
         {
             GD.Print("You do not have enough ammunition to fire this gun.");
         }       
-        shooting = false;
     }
 
     public void Spawn(Vector3 loc)
