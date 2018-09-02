@@ -5,14 +5,15 @@ public class Lobby : Control
 {
     int DEFAULT_PORT = 8910; // some random number, pick your port properly
 
-    Button joinBtn;
-    Button hostBtn;
+    Button _joinBtn;
+    Button _hostBtn;
+    Network _network;
     public override void _Ready()
     {
-        joinBtn = (Button)GetNode("panel/join");
-        hostBtn  = (Button)GetNode("panel/host");
-        hostBtn.Connect("pressed", this, "_On_Host_Pressed");
-        joinBtn.Connect("pressed", this, "_On_Join_Pressed");
+        _joinBtn = (Button)GetNode("panel/join");
+        _hostBtn  = (Button)GetNode("panel/host");
+        _hostBtn.Connect("pressed", this, "_On_Host_Pressed");
+        _joinBtn.Connect("pressed", this, "_On_Join_Pressed");
 
         // connect all the callbacks related to networking
         GetTree().Connect("network_peer_connected", this, "_Player_Connected");
@@ -27,14 +28,21 @@ public class Lobby : Control
     // callback from SceneTree
     private void _Player_Connected(int id)
     {
+        GD.Print("player connected");
         // someone connected, start the game!
 	    PackedScene main = (PackedScene)ResourceLoader.Load("res://Scenes/Main.tscn");
-        Node inst = (Node)main.Instance();
+        Main inst = (Main)main.Instance();
         Node of = GetNode("/root/OpenFortress");
         of.AddChild(inst);
         // connect deferred so we can safely erase it from the callback
 	    //inst.Connect("game_finished", this, "_End_Game", null, 1);
 	
+        _network = (Network)GetNode("/root/OpenFortress/Network");
+        if (GetTree().IsNetworkServer())
+        {
+            _network.AddClient(id);
+        }
+        _network.Active = true;
         this.Hide();
     }
 
@@ -53,6 +61,9 @@ public class Lobby : Control
     // callback from SceneTree, only for clients (not server)
     private void _Connected_OK()
     {
+        GD.Print("connected to server");
+        _network = (Network)GetNode("/root/OpenFortress/Network");
+        _network.Active = true;
         // will not use this one
         return;   
     }
@@ -65,8 +76,8 @@ public class Lobby : Control
         // remove peer
         GetTree().SetNetworkPeer(null);
         
-        joinBtn.SetDisabled(false);
-        hostBtn.SetDisabled(false);
+        _joinBtn.SetDisabled(false);
+        _hostBtn.SetDisabled(false);
     }
 
     private void _Server_Disconnected()
@@ -92,8 +103,9 @@ public class Lobby : Control
         // remove peer
         GetTree().SetNetworkPeer(null);
 
-        joinBtn.SetDisabled(false);
-        hostBtn.SetDisabled(false);
+        _joinBtn.SetDisabled(false);
+        _hostBtn.SetDisabled(false);
+        _network.Active = false;
                
         _Set_Status(with_error, false);
     }
@@ -117,6 +129,7 @@ public class Lobby : Control
 
     private void _On_Host_Pressed()
     {
+        GD.Print("on host pressed");
         NetworkedMultiplayerENet host = new NetworkedMultiplayerENet();
         host.SetCompressionMode(NetworkedMultiplayerENet.CompressionModeEnum.RangeCoder);
         // max: 1 peer, since it's a 2 player game for now
@@ -129,8 +142,8 @@ public class Lobby : Control
         }
         
         GetTree().SetNetworkPeer(host);
-        joinBtn.SetDisabled(true);
-        hostBtn.SetDisabled(true);
+        _joinBtn.SetDisabled(true);
+        _hostBtn.SetDisabled(true);
         _Set_Status("Waiting for player..", true);
     }
 	

@@ -7,12 +7,12 @@ public class Main : Node
     private object[] spawnsTeam2;
     private int currentSpawnTeam1 = 0;
     private int currentSpawnTeam2 = 0;
+    Network _network;
 
     public override void _Ready()
     {
-        PackedScene playerScene = (PackedScene)ResourceLoader.Load("res://Scenes/Player.tscn");
-        Player player = (Player)playerScene.Instance();
-        this.AddChild(player);
+        _network = (Network)GetNode("/root/OpenFortress/Network");
+        Player player = AddPlayer(true, GetTree().GetNetworkUniqueId());
 
         PackedScene m = (PackedScene)ResourceLoader.Load("res://Scenes/TeamMenu.tscn");
         TeamMenu m2 = (TeamMenu)m.Instance();
@@ -29,6 +29,20 @@ public class Main : Node
             Input.SetMouseMode(Input.MouseMode.Visible);
             GetTree().Quit();
         }
+    }
+
+    public Player AddPlayer(bool propagate, int clientID)
+    {
+        PackedScene playerScene = (PackedScene)ResourceLoader.Load("res://Scenes/Player.tscn");
+        Player player = (Player)playerScene.Instance();
+        player.SetName(clientID.ToString());
+        this.AddChild(player);
+        if (propagate)
+        {
+            _network.SpawnPlayer(player);
+        }
+
+        return player;
     }
 
     public override void _Input(InputEvent e)
