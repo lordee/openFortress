@@ -12,7 +12,6 @@ config_version=3
 
 config/name="openFortres"
 run/main_scene="res://OpenFortress.tscn"
-run/disable_stdout=true
 config/icon="res://Assets/icon.png"
 
 [input]
