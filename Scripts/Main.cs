@@ -35,8 +35,9 @@ public class Main : Node
     {
         PackedScene playerScene = (PackedScene)ResourceLoader.Load("res://Scenes/Player.tscn");
         Player player = (Player)playerScene.Instance();
-        player.SetName(clientID.ToString());
         this.AddChild(player);
+        player.SetName(clientID.ToString());
+        GD.Print(player.GetName());
         if (propagate)
         {
             _network.SpawnPlayer(player);

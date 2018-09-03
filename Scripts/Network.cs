@@ -103,7 +103,6 @@ public class Network : Node
     [Remote]
     public void ReceivePacket(int packetNum, int clientID, Vector3 trans)
     {
-        GD.Print("Got packet");
         if (this.IsNetworkMaster())
         {
             // if server receives packet, put changes in, update response packet with packetnumber
@@ -117,8 +116,13 @@ public class Network : Node
                     main.AddPlayer(false, clientID);
                 }
 
-                Player p = (Player)GetNode("/root/OpenFortress/Main/" + clientID.ToString());
-                p.Translation = trans;
+                if (trans != lastPacket.Translation)
+                {
+                    Player p = (Player)GetNode("/root/OpenFortress/Main/" + clientID.ToString());
+                    p.Translation = trans;
+                }
+
+                
 
                 // add new snapshot
                 if (ClientSnapShots.FindAll(ss => ss.ClientID == clientID).Count > 32)
