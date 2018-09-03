@@ -348,7 +348,11 @@ public class Player : KinematicBody
                 this.Shoot();
             }          
 
-            ActiveWeapon.PhysicsProcess(delta);
+            if (ActiveWeapon != null)
+            {
+                ActiveWeapon.PhysicsProcess(delta);
+            }
+            
             QueueJump();
             if (touchingGround || climbLadder)
             {
