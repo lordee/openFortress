@@ -102,9 +102,6 @@ public class Player : KinematicBody
         }
     }
 
-    // networking state probably
-    public int PlayerID = 0;
-
     // state
     private int _teamID = 9;
     public int TeamID { 
@@ -259,6 +256,8 @@ public class Player : KinematicBody
     private bool wishJump = false;
     private bool touchingGround = false;
 
+    Network _network;
+
     public override void _Ready()
     {
         // Called every time the node is added to the scene.
@@ -278,8 +277,7 @@ public class Player : KinematicBody
             l.Connect("body_entered", this, "_on_Ladder_body_entered");
             l.Connect("body_exited", this, "_on_Ladder_body_exited");
         }
-
-        this.SetName(this.PlayerID.ToString());
+        _network = (Network)GetNode("/root/OpenFortress/Network");
     }
 
     public override void _Input(InputEvent e)
@@ -364,6 +362,7 @@ public class Player : KinematicBody
             }
             
             playerVelocity = this.MoveAndSlide(playerVelocity, up);
+            _network.UpdateTranslation(this.Translation);
             touchingGround = IsOnFloor();     
             float speed = playerVelocity.Length();
             //GD.Print("Speed: " + speed.ToString());

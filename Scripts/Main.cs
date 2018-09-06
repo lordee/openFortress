@@ -12,12 +12,16 @@ public class Main : Node
     public override void _Ready()
     {
         _network = (Network)GetNode("/root/OpenFortress/Network");
-        Player player = AddPlayer(true, GetTree().GetNetworkUniqueId());
+        //if (!IsNetworkMaster())
+        //{   
+            Player player = AddPlayer(true, GetTree().GetNetworkUniqueId());
 
-        PackedScene m = (PackedScene)ResourceLoader.Load("res://Scenes/TeamMenu.tscn");
-        TeamMenu m2 = (TeamMenu)m.Instance();
-        this.AddChild(m2); 
-        m2.Init(player.GetName());
+            PackedScene m = (PackedScene)ResourceLoader.Load("res://Scenes/TeamMenu.tscn");
+            TeamMenu m2 = (TeamMenu)m.Instance();
+            this.AddChild(m2); 
+            m2.Init(player.GetName());
+        //}
+        
         spawnsTeam1 = GetTree().GetNodesInGroup("SpawnTeam1");
         spawnsTeam2 = GetTree().GetNodesInGroup("SpawnTeam2");
     }
@@ -37,7 +41,7 @@ public class Main : Node
         Player player = (Player)playerScene.Instance();
         this.AddChild(player);
         player.SetName(clientID.ToString());
-        GD.Print(player.GetName());
+        
         if (propagate)
         {
             _network.SpawnPlayer(player);
