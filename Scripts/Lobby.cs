@@ -38,6 +38,7 @@ public class Lobby : Control
 	    //inst.Connect("game_finished", this, "_End_Game", null, 1);
 	
         _network = (Network)GetNode("/root/OpenFortress/Network");
+        _network.NetworkID = GetTree().GetNetworkUniqueId();
         _network.Active = true;
         this.Hide();
     }

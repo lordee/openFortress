@@ -6,12 +6,14 @@ public class Network : Node
 {
     // network
     public bool Active = false;
+    public int NetworkID;
 
     // client
     int sendPacketNum = 0;
-    int _acknowledgedPacketNumber;
+    int _acknowledgedPacketNumber = 0;
     List<Vector3> playerTranslations = new List<Vector3>();
     List<Tuple<int, Vector3>> playerTranslationsSent = new List<Tuple<int, Vector3>>();
+    Vector3 lastTranslation = new Vector3();
 
     // server
     List<SnapShot> ClientSnapShots = new List<SnapShot>();
@@ -30,7 +32,7 @@ public class Network : Node
             // check if there is new data
             object[] packet = null;
 
-            packet = GetPacket(GetTree().GetNetworkUniqueId(), 0);
+            packet = GetPacket(this.NetworkID, 0);
 
             // send to server
             if (packet != null)
@@ -42,15 +44,17 @@ public class Network : Node
 
     private object[] GetPacket(int clientID, int otherClientID)
     {
+        object[] packet = null;
         int packetNum = 0;
         Vector3 trans = new Vector3();
         // if there is a command not yet sent or acknowledged, add to packet
         sendPacketNum++;
         packetNum = sendPacketNum;
         
-        if (playerTranslationsSent.Count > 0)
+        if (playerTranslationsSent.Count > 0) // unacknowledged sent translations
         {
             trans = playerTranslationsSent[0].Item2;
+            packet = new object[] { packetNum, clientID, otherClientID, trans };
         }
         else if (playerTranslations.Count > 0)
         {               
@@ -58,9 +62,9 @@ public class Network : Node
 
             playerTranslationsSent.Add(new Tuple<int, Vector3>(sendPacketNum, trans));
             playerTranslations.RemoveAt(0);
+            packet = new object[] { packetNum, clientID, otherClientID, trans };
         }
 
-        object[] packet = { packetNum, clientID, otherClientID, trans };
         return packet;
     }
 
@@ -90,7 +94,11 @@ public class Network : Node
 
     public void UpdateTranslation(Vector3 trans)
     {
-        playerTranslations.Add(trans);
+        if (!playerTranslations.Contains(trans) && trans != lastTranslation)
+        {
+            playerTranslations.Add(trans);
+            lastTranslation = trans;
+        }
     }
 
 // receiving packets
