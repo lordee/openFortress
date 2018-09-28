@@ -9,21 +9,25 @@ abstract public class HandGrenade : Weapon
     public bool Primed = false;
     private float _primedTime = 0;
     private Player _shooter;
+    private Camera _camera;
 
     public HandGrenade()
     {
-        _projectileSpeed = 10;
+        _projectileSpeed = 20;
     }
 
     override public void PhysicsProcess(float delta)
     {
         _primedTime += delta;
 
-        if (Primed && _primedTime >= 3)
+        if (this.Primed && _primedTime >= 3)
         {
+            this.Primed = false;
             // explode on player
             _projectileMesh = (FragGrenadeO)_projectileScene.Instance();
             _shooter.AddChild(_projectileMesh);
+
+            _projectileMesh.Init(_camera.GetGlobalTransform(), _shooter, this, _projectileSpeed, _damage);
             _projectileMesh.Explode(null, _damage);
         }
     }
@@ -32,18 +36,20 @@ abstract public class HandGrenade : Weapon
     {
         bool shot = false;
         _shooter = shooter;
+        _camera = camera;
         if (Primed)
         {
             this.Primed = false;
             // throw it, TODO test for tranq in future
             // spawn projectile, set it moving
-            _projectileMesh = (FragGrenadeO)_projectileScene.Instance();
+            _projectileMesh = (Projectile)_projectileScene.Instance();
             
             // add to scene
             shooter.MainNode.AddChild(_projectileMesh);
             
-            Transform t = camera.GetGlobalTransform();
-            _projectileMesh.Init(t, shooter, this, _projectileSpeed, _damage);
+            _projectileMesh.Init(camera.GetGlobalTransform(), shooter, this, _projectileSpeed, _damage);
+            FragGrenadeO o = (FragGrenadeO)_projectileMesh;
+            o.Time = _primedTime;
             shot = true;
         }
         else
@@ -63,8 +69,6 @@ abstract public class HandGrenade : Weapon
         _projectileScene = (PackedScene)ResourceLoader.Load(_projectileResource);
     }
 }
-
-
 
 public class FragGrenade : HandGrenade
 {

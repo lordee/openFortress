@@ -5,6 +5,10 @@ public class FragGrenadeO : Projectile
 {
     private float _gravity = 1.0f;
     private float _time = 0f;
+    public float Time {
+        get { return _time; }
+        set { _time = value; }
+    }
     protected float _lifeTime = 3.0f;
     private Vector3 _velocity;
 
@@ -39,4 +43,6 @@ public class FragGrenadeO : Projectile
             this.Explode(null, _damage);
         }
     }
+
+
 }
