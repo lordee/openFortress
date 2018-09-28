@@ -92,7 +92,7 @@ public class Player : KinematicBody
     Label ArmourLabel;
 
     private Main _mainNode;
-    private Main MainNode {
+    public Main MainNode {
         get {
             if (_mainNode == null)
             {
@@ -323,6 +323,20 @@ public class Player : KinematicBody
             {
                 this.Detpipe();
             }
+            else if (Input.IsActionJustPressed("gren1"))
+            {
+                if (this.Class.Gren1.Primed)
+                {
+                    // throw it
+                    this.Class.Gren1.Shoot(camera, cameraCenter, this);
+                }
+                else if (this._currentGren1 > 0)
+                {
+                    // prime gren
+                    this.Class.Gren1.Shoot(camera, cameraCenter, this);
+                    _currentGren1 -= 1;
+                }
+            }
         }
     }
 
@@ -349,6 +363,10 @@ public class Player : KinematicBody
             if (ActiveWeapon != null)
             {
                 ActiveWeapon.PhysicsProcess(delta);
+            }
+            if (this.Class.Gren1.Primed)
+            {
+                this.Class.Gren1.PhysicsProcess(delta);
             }
             
             QueueJump();

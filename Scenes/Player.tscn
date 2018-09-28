@@ -1,14 +1,15 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Scripts/Player.cs" type="Script" id=1]
 [ext_resource path="res://Assets/Models/player/dwarf2.obj" type="ArrayMesh" id=2]
+[ext_resource path="res://Assets/Sounds/grentimer.wav" type="AudioStream" id=3]
 
 [sub_resource type="CapsuleShape" id=1]
 
 radius = 0.6
 height = 2.0
 
-[node name="Player" type="KinematicBody"]
+[node name="Player" type="KinematicBody" index="0"]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 4 )
 input_ray_pickable = true
@@ -90,5 +91,14 @@ material/3 = null
 material/4 = null
 material/5 = null
 _sections_unfolded = [ "Transform" ]
+
+[node name="GrenTimer" type="AudioStreamPlayer" parent="." index="5"]
+
+stream = ExtResource( 3 )
+volume_db = 0.0
+pitch_scale = 1.0
+autoplay = false
+mix_target = 0
+bus = "Master"
 
 

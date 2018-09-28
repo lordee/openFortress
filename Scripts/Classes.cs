@@ -10,8 +10,8 @@ abstract public class TFClass
     protected Weapon _weapon2;
     protected Weapon _weapon3;
     protected Weapon _weapon4;
-    protected Weapon _gren1;
-    protected Weapon _gren2;
+    protected HandGrenade _gren1;
+    protected HandGrenade _gren2;
     protected int _maxShells;
     protected int _maxNails;
     protected int _maxRockets;
@@ -49,12 +49,12 @@ abstract public class TFClass
             return _weapon4;           
         }
     }
-    public Weapon Gren1 {
+    public HandGrenade Gren1 {
         get {
             return _gren1;           
         }   
     }
-    public Weapon Gren2 {
+    public HandGrenade Gren2 {
         get {
             return _gren2;           
         }   

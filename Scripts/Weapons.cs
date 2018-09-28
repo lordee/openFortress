@@ -58,7 +58,7 @@ abstract public class Weapon : MeshInstance
     protected float _reloadTime;
     protected string _projectileResource;
     protected Projectile _projectileMesh;
-    protected PackedScene _projectileScene;   
+    protected PackedScene _projectileScene;
     protected int _projectileSpeed;
     protected WeaponType _weaponType;
     protected float _shootRange = 0f;
@@ -79,15 +79,13 @@ abstract public class Weapon : MeshInstance
     PackedScene puffScene;
     PackedScene bloodScene;
     
-    Node MainNode;
-
     public Weapon() {
         puffScene = (PackedScene)ResourceLoader.Load(puffResource);
         bloodScene = (PackedScene)ResourceLoader.Load(bloodResource);
     }
 
     // make our own physics process because we do everything via script
-    public void PhysicsProcess(float delta)
+    virtual public void PhysicsProcess(float delta)
     {
         this.TimeSinceLastShot += delta;
         this.TimeSinceReloaded += delta;
@@ -152,7 +150,7 @@ abstract public class Weapon : MeshInstance
 
     public bool Reloading = false;
 
-    public bool Shoot(Camera camera, Vector2 cameraCenter, Player shooter) 
+    virtual public bool Shoot(Camera camera, Vector2 cameraCenter, Player shooter) 
     {
         bool shot = false;
         // if enough ammunition in clip
@@ -396,107 +394,6 @@ abstract public class Weapon : MeshInstance
         }
         
         GD.Print("Loaded " + Name);
-    }
-}
-
-public class FragGrenade : Weapon
-{
-    public FragGrenade() {
-        GD.Print("FragGrenade");
-        _damage = 100;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.FragGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-// magic fly tool grenade - old concussion
-public class MFTGrenade : Weapon
-{
-    public MFTGrenade() {
-        GD.Print("MFTGrenade");
-        _damage = 0;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.MFTGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-public class ConcussionGrenade : Weapon
-{
-    public ConcussionGrenade() {
-        GD.Print("ConcussionGrenade");
-        _damage = 0;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.ConcussionGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-// this is useless, replace it with something
-public class Flare : Weapon
-{
-    public Flare() {
-        GD.Print("Flare");
-        _damage = 0;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.Flare;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-public class NailGrenade : Weapon
-{
-    public NailGrenade() {
-        GD.Print("NailGrenade");
-        _damage = 50;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.NailGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-public class MIRVGrenade : Weapon
-{
-    public MIRVGrenade() {
-        GD.Print("MIRVGrenade");
-        _damage = 50;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.MIRVGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-public class NapalmGrenade : Weapon
-{
-    public NapalmGrenade() {
-        GD.Print("NapalmGrenade");
-        _damage = 20;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.NapalmGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-public class GasGrenade : Weapon
-{
-    public GasGrenade() {
-        GD.Print("GasGrenade");
-        _damage = 10;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.GasGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
-}
-
-public class EMPGrenade : Weapon
-{
-    public EMPGrenade() {
-        GD.Print("EMPGrenade");
-        _damage = 0;
-        _minAmmoRequired = 1;
-        _ammoType = Ammunition.EMPGrenade;
-        _weaponResource = "res://Scenes/Weapons/Shotgun.tscn";
     }
 }
 
