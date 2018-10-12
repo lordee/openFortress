@@ -30,6 +30,7 @@ abstract public class HandGrenade : KinematicBody
         get { return _projectileResource; }
     }
     private bool _thrown = false;
+    int _throwCount = 0;
 
     public HandGrenade()
     {
@@ -37,13 +38,10 @@ abstract public class HandGrenade : KinematicBody
 
     public override void _PhysicsProcess(float delta)
     {
-        if (_explodeNextTick)
-        {
-            this.Explode(_damage);
-        }
+        
 
         _primedTime += delta;
-        if (_thrown)
+        if (_thrown || _explodeNextTick)
         {
             _velocity = _direction * _currentSpeed;  
             Vector3 motion = _velocity * delta;
@@ -60,6 +58,20 @@ abstract public class HandGrenade : KinematicBody
                 // apply gravity
                 _direction.y -= _gravity * delta;
             }
+        }
+
+        if (_explodeNextTick)
+        {
+            // let grenade "drop" for a frame
+            if (_throwCount >= 1)
+            {
+                this.Explode(_damage);
+            }
+            else
+            {
+                _throwCount++;
+            }
+            
         }
         
         // after 3 seconds, explode
