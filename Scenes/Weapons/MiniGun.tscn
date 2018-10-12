@@ -4,7 +4,7 @@
 [ext_resource path="res://Assets/Sounds/shots/cg1.wav" type="AudioStream" id=2]
 [ext_resource path="res://Assets/Sprites/muzzleflash/muzzleflash.png" type="Texture" id=3]
 
-[node name="MiniGun" type="MeshInstance" index="0"]
+[node name="MiniGun" type="MeshInstance"]
 
 transform = Transform( -8, 2.60673e-06, 0, 2.60673e-06, 8, 2.60673e-06, 8.49381e-13, 2.60673e-06, -8, 0.497061, -0.490857, -0.921065 )
 layers = 1
