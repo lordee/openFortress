@@ -30,7 +30,7 @@ public class Grenade : Projectile
             {
                 if (pl != this._playerOwner)
                 {
-                    pl.TakeDamage(this.Transform, this.WeaponOwner, _playerOwner, _damage);
+                    pl.TakeDamage(this.Transform, this.WeaponOwner.GetType().ToString().ToLower(), this.WeaponOwner.InflictLength, _playerOwner, _damage);
 
                     this.Explode(pl, _damage);
                 }

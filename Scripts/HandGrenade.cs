@@ -4,161 +4,198 @@ using System.Collections.Generic;
 
 
 
-abstract public class HandGrenade : Weapon
+abstract public class HandGrenade : KinematicBody
 {
-    public bool Primed = false;
     private float _primedTime = 0;
+    private float _lifeTime = 3.0f;
     private Player _shooter;
     private Camera _camera;
+    private bool _explodeNextTick = false;
+    private Vector3 _velocity;
+    private Vector3 _direction = new Vector3();
+    private float _currentSpeed = 20;
+    private float _gravity = 1.0f;
+    protected float _damage;
+    private float _areaOfEffectRadius = 5f;
+
+    private string _particleResource = "res://Scenes/Weapons/RocketExplosion.tscn";
+    private PackedScene _particleScene;
+    private PackedScene _projectileScene;
+
+    protected Player _playerOwner;
+
+    protected Ammunition _ammoType;
+    protected string _projectileResource;
+    public string ProjectileResource {
+        get { return _projectileResource; }
+    }
+    private bool _thrown = false;
 
     public HandGrenade()
     {
-        _projectileSpeed = 20;
     }
 
-    override public void PhysicsProcess(float delta)
+    public override void _PhysicsProcess(float delta)
     {
+        if (_explodeNextTick)
+        {
+            this.Explode(_damage);
+        }
+
         _primedTime += delta;
-
-        if (this.Primed && _primedTime >= 3)
+        if (_thrown)
         {
-            this.Primed = false;
-            // explode on player
-            _projectileMesh = (FragGrenadeO)_projectileScene.Instance();
-            _shooter.AddChild(_projectileMesh);
+            _velocity = _direction * _currentSpeed;  
+            Vector3 motion = _velocity * delta;
 
-            _projectileMesh.Init(_camera.GetGlobalTransform(), _shooter, this, _projectileSpeed, _damage);
-            _projectileMesh.Explode(null, _damage);
+            KinematicCollision c = this.MoveAndCollide(motion);
+
+            if (c != null)
+            {
+                // bounce
+                _direction = motion.Bounce(c.Normal);
+                _currentSpeed *= .95f;
+            }
+            else {
+                // apply gravity
+                _direction.y -= _gravity * delta;
+            }
+        }
+        
+        // after 3 seconds, explode
+        if (_primedTime > _lifeTime)
+        {
+            if (_thrown)
+            {
+                this.Explode(_damage);
+            }
+            else
+            {
+                this.Transform = this._playerOwner.GetGlobalTransform();
+                _explodeNextTick = true;
+            }
         }
     }
 
-    public override bool Shoot(Camera camera, Vector2 cameraCenter, Player shooter) 
+    public void Prime(Player pOwner, float damage)
     {
-        bool shot = false;
-        _shooter = shooter;
-        _camera = camera;
-        if (Primed)
-        {
-            this.Primed = false;
-            // throw it, TODO test for tranq in future
-            // spawn projectile, set it moving
-            _projectileMesh = (Projectile)_projectileScene.Instance();
-            
-            // add to scene
-            shooter.MainNode.AddChild(_projectileMesh);
-            
-            _projectileMesh.Init(camera.GetGlobalTransform(), shooter, this, _projectileSpeed, _damage);
-            FragGrenadeO o = (FragGrenadeO)_projectileMesh;
-            o.Time = _primedTime;
-            shot = true;
-        }
-        else
-        {
-            this.Primed = true;
-            _primedTime = 0;
-            // play grentimer
-            AudioStreamPlayer gt = (AudioStreamPlayer)shooter.GetNode("GrenTimer");
-            gt.Play();
-            shot = true;
-        }
-        return shot;
+        _damage = damage;
+        _particleScene = (PackedScene)ResourceLoader.Load(_particleResource);
+        this.AddCollisionExceptionWith(pOwner);
+        _playerOwner = pOwner;
+        this.Visible = false;
     }
 
-    public void Spawn()
+    public void Throw(Transform t)
     {
-        _projectileScene = (PackedScene)ResourceLoader.Load(_projectileResource);
+        this.Transform = t;
+        Vector3 init = new Vector3();
+        init -= this.Transform.basis.z;
+        // spawn it in front of player
+        this.SetTranslation(this.GetTranslation() + init);
+        _direction -= this.Transform.basis.z;
+        _direction = _direction.Normalized();
+        _thrown = true;
+        this.Visible = true;
+    }
+
+    public void Explode(float damage)
+    {
+        GD.Print("exploding");
+        SphereShape s = new SphereShape();
+        s.SetRadius(_areaOfEffectRadius);
+
+        // Get space and state of the subject body
+        RID space = PhysicsServer.BodyGetSpace(this.GetRid());
+        PhysicsDirectSpaceState state = PhysicsServer.SpaceGetDirectState(space);
+
+        // Setup shape query parameters
+        PhysicsShapeQueryParameters par = new PhysicsShapeQueryParameters();
+        par.SetShapeRid(s.GetRid());
+        par.Transform = this.Transform;
+        
+        object[] result = state.IntersectShape(par);
+        foreach (Dictionary<object, object>  r in result) {
+            if (r["collider"] is Player pl)
+            {
+                GD.Print("found player");
+                // find how far from explosion as a percentage, apply to damage
+                float dist = this.Transform.origin.DistanceTo(pl.Transform.origin);
+                dist = dist > this._areaOfEffectRadius ? (this._areaOfEffectRadius*.99f) : dist;
+                float pc = ((this._areaOfEffectRadius - dist) / this._areaOfEffectRadius);
+                float d = damage * pc;
+                GD.Print("dam: " + damage);
+                GD.Print("pc: " + pc);
+                GD.Print("dist: " + dist);
+                GD.Print("inflicted dam: " + d);
+                // inflict damage
+                pl.TakeDamage(this.Transform, this.GetType().ToString().ToLower(), 0, this._playerOwner, d);
+            }
+        }
+        
+        Particles p = (Particles)_particleScene.Instance();
+        p.Transform = this.GetGlobalTransform();
+        GetNode("/root/OpenFortress/Main").AddChild(p);
+        p.Emitting = true;
+        
+        // remove projectile
+        _playerOwner.PrimedGrenade = null;
+        GetTree().QueueDelete(this);
     }
 }
 
-public class FragGrenade : HandGrenade
+public static class FragGrenade
 {
-    public FragGrenade() {
-        GD.Print("FragGrenade");
-        _damage = 100;
-        _ammoType = Ammunition.FragGrenade;
-        _projectileResource = "res://Scenes/Weapons/FragGrenade.tscn";
-        base.Spawn();
-    }
+    public static float Damage = 100;
+    public static string ProjectileResource = "res://Scenes/Weapons/FragGrenade.tscn"; 
 }
 
 // magic fly tool grenade - old concussion
-public class MFTGrenade : HandGrenade
+public static class MFTGrenade
 {
-    public MFTGrenade() {
-        GD.Print("MFTGrenade");
-        _damage = 0;
-        _ammoType = Ammunition.MFTGrenade;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 0;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }
 
-public class ConcussionGrenade : HandGrenade
+public static class ConcussionGrenade
 {
-    public ConcussionGrenade() {
-        GD.Print("ConcussionGrenade");
-        _damage = 0;
-        _ammoType = Ammunition.ConcussionGrenade;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 0;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }
 
 // this is useless, replace it with something
-public class Flare : HandGrenade
+public static class Flare
 {
-    public Flare() {
-        GD.Print("Flare");
-        _damage = 0;
-        _ammoType = Ammunition.Flare;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 0;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }
 
-public class NailGrenade : HandGrenade
+public static class NailGrenade
 {
-    public NailGrenade() {
-        GD.Print("NailGrenade");
-        _damage = 0;
-        _ammoType = Ammunition.NailGrenade;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 0;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }
 
-public class MIRVGrenade : HandGrenade
+public static class MIRVGrenade
 {
-    public MIRVGrenade() {
-        GD.Print("MIRVGrenade");
-        _damage = 30;
-        _ammoType = Ammunition.MIRVGrenade;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 30;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }
 
-public class NapalmGrenade : HandGrenade
+public static class NapalmGrenade
 {
-    public NapalmGrenade() {
-        GD.Print("NapalmGrenade");
-        _damage = 20;
-        _ammoType = Ammunition.NapalmGrenade;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 20;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }
 
-public class GasGrenade : HandGrenade
+public static class GasGrenade
 {
-    public GasGrenade() {
-        GD.Print("GasGrenade");
-        _damage = 0;
-        _ammoType = Ammunition.GasGrenade;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 0;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }
 
-public class EMPGrenade : HandGrenade
+public static class EMPGrenade
 {
-    public EMPGrenade() {
-        GD.Print("EMPGrenade");
-        _damage = 0;
-        _ammoType = Ammunition.EMPGrenade;
-        _projectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-    }
+    public static float Damage = 0;
+    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
 }

@@ -10,8 +10,9 @@ abstract public class TFClass
     protected Weapon _weapon2;
     protected Weapon _weapon3;
     protected Weapon _weapon4;
-    protected HandGrenade _gren1;
-    protected HandGrenade _gren2;
+    protected Ammunition _gren1;
+    protected Ammunition _gren2;
+    public HandGrenadeManager HandGrenadeManager = new HandGrenadeManager();
     protected int _maxShells;
     protected int _maxNails;
     protected int _maxRockets;
@@ -49,12 +50,12 @@ abstract public class TFClass
             return _weapon4;           
         }
     }
-    public HandGrenade Gren1 {
+    public Ammunition Gren1 {
         get {
             return _gren1;           
         }   
     }
-    public HandGrenade Gren2 {
+    public Ammunition Gren2 {
         get {
             return _gren2;           
         }   
@@ -111,6 +112,7 @@ abstract public class TFClass
         {
             Weapon4.Spawn(camera, "Weapon4");
         }
+        HandGrenadeManager.MainNode = mainNode;
     }
 }
 
@@ -122,8 +124,8 @@ public class Observer : TFClass
         _weapon2 = null;
         _weapon3 = null;
         _weapon4 = null;
-        _gren1 = null;
-        _gren2 = null;
+        _gren1 = Ammunition.None;
+        _gren2 = Ammunition.None;
         _health = 0;
         _armour = 0;
         _maxShells = 0;
@@ -143,8 +145,8 @@ public class Scout : TFClass
         _weapon2 = new Shotgun();
         _weapon3 = new Axe();
         _weapon4 = null;
-        _gren1 = new MFTGrenade();
-        _gren2 = new ConcussionGrenade();
+        _gren1 = Ammunition.MFTGrenade;
+        _gren2 = Ammunition.ConcussionGrenade;
         _health = 75;
         _armour = 50;
         _maxShells = 50;
@@ -164,8 +166,8 @@ public class Sniper : TFClass
         _weapon2 = new NailGun();
         _weapon3 = new Axe();
         _weapon4 = null;
-        _gren1 = new FragGrenade();
-        _gren2 = new Flare();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.Flare;
         _health = 85;
         _armour = 50;
         _maxShells = 75;
@@ -185,15 +187,15 @@ public class Soldier : TFClass
         _weapon2 = new SuperShotgun();
         _weapon3 = new Shotgun();
         _weapon4 = new Axe();
-        _gren1 = new FragGrenade();
-        _gren2 = new NailGrenade();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.NailGrenade;
         _health = 100;
         _armour = 200;
         _maxShells = 100;
         _maxNails = 50;
         _maxRockets = 50;
         _maxCells = 50;
-        _maxGren1 = 4;
+        _maxGren1 = 100;
         _maxGren2 = 2;
     }
 }
@@ -206,8 +208,8 @@ public class Demoman : TFClass
         _weapon2 = new PipebombLauncher();
         _weapon3 = new Shotgun();
         _weapon4 = new Axe();
-        _gren1 = new FragGrenade();
-        _gren2 = new MIRVGrenade();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.MIRVGrenade;
         _health = 90;
         _armour = 120;
         _maxShells = 50;
@@ -227,8 +229,8 @@ public class Medic : TFClass
         _weapon2 = new SuperShotgun();
         _weapon3 = new Shotgun();
         _weapon4 = new Syringe();
-        _gren1 = new FragGrenade();
-        _gren2 = new ConcussionGrenade();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.ConcussionGrenade;
         _health = 100;
         _armour = 80;
         _maxShells = 50;
@@ -248,8 +250,8 @@ public class HWGuy : TFClass
         _weapon2 = new SuperShotgun();
         _weapon3 = new Shotgun();
         _weapon4 = new Axe();
-        _gren1 = new FragGrenade();
-        _gren2 = new MIRVGrenade();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.MIRVGrenade;
         _health = 100;
         _armour = 300;
         _maxShells = 200;
@@ -269,8 +271,8 @@ public class Pyro : TFClass
         _weapon2 = new PyroLauncher();
         _weapon3 = new Shotgun();
         _weapon4 = new Axe();
-        _gren1 = new FragGrenade();
-        _gren2 = new NapalmGrenade();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.NapalmGrenade;
         _health = 100;
         _armour = 150;
         _maxShells = 50;
@@ -290,8 +292,8 @@ public class Spy : TFClass
         _weapon2 = new SuperShotgun();
         _weapon3 = new NailGun();
         _weapon4 = new Knife();
-        _gren1 = new FragGrenade();
-        _gren2 = new GasGrenade();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.GasGrenade;
         _health = 90;
         _armour = 50;
         _maxShells = 50;
@@ -311,8 +313,8 @@ public class Engineer : TFClass
         _weapon2 = new SuperShotgun();
         _weapon3 = new Spanner();
         _weapon4 = null;
-        _gren1 = new FragGrenade();
-        _gren2 = new EMPGrenade();
+        _gren1 = Ammunition.FragGrenade;
+        _gren2 = Ammunition.EMPGrenade;
         _health = 80;
         _armour = 50;
         _maxShells = 50;

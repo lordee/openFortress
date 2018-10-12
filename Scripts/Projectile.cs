@@ -58,7 +58,7 @@ public class Projectile : KinematicBody
                 // i think this isn't needed anymore thanks to addcollisionexceptionwith
                 if (pl != this._playerOwner)
                 {
-                    pl.TakeDamage(this.Transform, _weaponOwner, _playerOwner, damage);
+                    pl.TakeDamage(this.Transform, _weaponOwner.GetType().ToString().ToLower(), _weaponOwner.InflictLength, _playerOwner, damage);
                     this.Explode(pl, damage);
                 }
             }
@@ -70,6 +70,7 @@ public class Projectile : KinematicBody
 
     public void Explode(Player ignore, float damage)
     {
+        GD.Print("exploding");
         if (_areaOfEffect)
         {
             this.FindRadius(ignore, damage);
@@ -86,6 +87,7 @@ public class Projectile : KinematicBody
 
     protected void FindRadius(Player ignore, float damage)
     {
+        GD.Print("findradius");
         // test for radius damage
         SphereShape s = new SphereShape();
         s.SetRadius(_areaOfEffectRadius);
@@ -103,6 +105,7 @@ public class Projectile : KinematicBody
         foreach (Dictionary<object, object>  r in result) {
             if (r["collider"] is Player pl)
             {
+                GD.Print("found player");
                 if (pl != ignore || ignore == null)
                 {
                     // find how far from explosion as a percentage, apply to damage
@@ -122,7 +125,7 @@ public class Projectile : KinematicBody
                     }
                     GD.Print("inflicted dam: " + d);
                     // inflict damage
-                    pl.TakeDamage(this.Transform, _weaponOwner, this._playerOwner, d);
+                    pl.TakeDamage(this.Transform, _weaponOwner.GetType().ToString().ToLower(), _weaponOwner.InflictLength, this._playerOwner, d);
                 }
             }
         }

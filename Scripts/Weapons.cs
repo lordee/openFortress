@@ -20,7 +20,8 @@ public enum Ammunition
     GasGrenade,
     EMPGrenade,
     Flare,
-    Axe
+    Axe,
+    None
 }
 
 public enum WeaponType
@@ -244,7 +245,7 @@ abstract public class Weapon : MeshInstance
                             }
                             else
                             {
-                                hit.TakeDamage(shooter.Transform, this, shooter, hitList[kb]);
+                                hit.TakeDamage(shooter.Transform, this.GetType().ToString().ToLower(), this.InflictLength, shooter, hitList[kb]);
                             }
                         }
 

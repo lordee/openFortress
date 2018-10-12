@@ -49,8 +49,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Scripts\FragGrenadeO.cs" />
     <Compile Include="Scripts\HandGrenade.cs" />
+    <Compile Include="Scripts\HandGrenadeManager.cs" />
     <Compile Include="Scripts\Lobby.cs" />
     <Compile Include="Scripts\Network.cs" />
     <Compile Include="Scripts\Grenade.cs" />

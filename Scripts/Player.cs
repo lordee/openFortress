@@ -15,11 +15,16 @@ class DiseasedData
     public float TimeSinceDiseased;
     public Weapon Inflictor;
 
-    public DiseasedData(Player attacker, Weapon inflictor, float timeSinceDiseased)
+    public DiseasedData(Player attacker, string inflictor, float timeSinceDiseased)
     {
         Attacker = attacker;
         TimeSinceDiseased = timeSinceDiseased;
-        Inflictor = inflictor;
+        switch (inflictor)
+        {
+            case "syringe":
+                Inflictor = new Syringe();
+            break;
+        }
     }
 }
 
@@ -57,6 +62,13 @@ public class Player : KinematicBody
 
     private List<DiseasedData> _diseasedBy = new List<DiseasedData>();
     private float _diseasedInterval = 0f;
+
+    private HandGrenade _primedGrenade;
+    public HandGrenade PrimedGrenade
+    {
+        get { return _primedGrenade; }
+        set { _primedGrenade = value; }
+    }
 
     // physics
     private float gravity = 27.0f;
@@ -325,15 +337,16 @@ public class Player : KinematicBody
             }
             else if (Input.IsActionJustPressed("gren1"))
             {
-                if (this.Class.Gren1.Primed)
+                if (this.Class.HandGrenadeManager.PrimedGrenade1 != null)
                 {
                     // throw it
-                    this.Class.Gren1.Shoot(camera, cameraCenter, this);
+                    this.Class.HandGrenadeManager.ThrowGren1(camera.GetGlobalTransform(), this, this.Class.Gren1);
                 }
                 else if (this._currentGren1 > 0)
                 {
-                    // prime gren
-                    this.Class.Gren1.Shoot(camera, cameraCenter, this);
+                    // prime new gren1
+                    this.Class.HandGrenadeManager.PrimeGren1(this, this.Class.Gren1);                 
+                   
                     _currentGren1 -= 1;
                 }
             }
@@ -350,7 +363,7 @@ public class Player : KinematicBody
                 dd.TimeSinceDiseased += delta;
                 if (dd.TimeSinceDiseased >= _diseasedInterval)
                 {
-                    this.TakeDamage(this.Transform, dd.Inflictor ,dd.Attacker, dd.Inflictor.Damage);
+                    this.TakeDamage(this.Transform, dd.Inflictor.GetType().ToString().ToLower(), dd.Inflictor.InflictLength, dd.Attacker, dd.Inflictor.Damage);
                 }
             }
 
@@ -364,11 +377,7 @@ public class Player : KinematicBody
             {
                 ActiveWeapon.PhysicsProcess(delta);
             }
-            if (this.Class.Gren1.Primed)
-            {
-                this.Class.Gren1.PhysicsProcess(delta);
-            }
-            
+
             QueueJump();
             if (touchingGround || climbLadder)
             {
@@ -447,18 +456,18 @@ public class Player : KinematicBody
         }
     }
 
-    public void TakeDamage(Transform inflictorTransform, Weapon inflictorType, Player attacker, float damage)
+    public void TakeDamage(Transform inflictorTransform, string inflictorType, float inflictLength, Player attacker, float damage)
     {
         // special stuff
-        switch (inflictorType.GetType().ToString().ToLower())
+        switch (inflictorType)
         {
             case "tranquiliser":
                 this.Tranquilised = true;
-                _tranquilisedLength = inflictorType.InflictLength;
+                _tranquilisedLength = inflictLength;
             break;
             case "syringe":
                 _diseasedBy.Add(new DiseasedData(attacker, inflictorType, 0f));
-                _diseasedInterval = inflictorType.InflictLength;
+                _diseasedInterval = inflictLength;
             break;
         }
 
@@ -476,7 +485,6 @@ public class Player : KinematicBody
 
         float hUsed = damage - aUsed;
 
-
         if (h > hUsed)
         {
             // they survive
@@ -489,13 +497,16 @@ public class Player : KinematicBody
         }
 
         // add velocity
+        GD.Print("p origin: " + this.Transform.origin);
+        GD.Print("inflict origin: " + inflictorTransform.origin);
+        GD.Print("damage to speed: " + damage);
         Vector3 dir = this.Transform.origin - inflictorTransform.origin;
         dir = dir.Normalized();
         dir = dir * damage;
         this.playerVelocity += dir;
     }
 
-    private void Die(Weapon inflictorType, Player attacker)
+    private void Die(string inflictorType, Player attacker)
     {
         throw new NotImplementedException();
         // death sound
