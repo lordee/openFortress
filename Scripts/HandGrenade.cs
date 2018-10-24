@@ -8,29 +8,20 @@ abstract public class HandGrenade : KinematicBody
 {
     private float _primedTime = 0;
     private float _lifeTime = 3.0f;
-    private Player _shooter;
-    private Camera _camera;
     private bool _explodeNextTick = false;
     private Vector3 _velocity;
     private Vector3 _direction = new Vector3();
     private float _currentSpeed = 20;
     private float _gravity = 1.0f;
-    protected float _damage;
+    private float _damage;
     private float _areaOfEffectRadius = 5f;
-
     private string _particleResource = "res://Scenes/Weapons/RocketExplosion.tscn";
     private PackedScene _particleScene;
     private PackedScene _projectileScene;
-
-    protected Player _playerOwner;
-
-    protected Ammunition _ammoType;
-    protected string _projectileResource;
-    public string ProjectileResource {
-        get { return _projectileResource; }
-    }
+    private Player _playerOwner;
+    private Ammunition _grenadeType;
+    private string _projectileResource;
     private bool _thrown = false;
-    int _throwCount = 0;
 
     public HandGrenade()
     {
@@ -80,8 +71,9 @@ abstract public class HandGrenade : KinematicBody
         }       
     }
 
-    public void Prime(Player pOwner, float damage)
+    public void Prime(Player pOwner, float damage, Ammunition grenadeType)
     {
+        _grenadeType = grenadeType;
         _damage = damage;
         _particleScene = (PackedScene)ResourceLoader.Load(_particleResource);
         this.AddCollisionExceptionWith(pOwner);
@@ -104,7 +96,6 @@ abstract public class HandGrenade : KinematicBody
 
     public void Explode(float damage)
     {
-        GD.Print("exploding");
         SphereShape s = new SphereShape();
         s.SetRadius(_areaOfEffectRadius);
 

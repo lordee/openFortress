@@ -34,13 +34,14 @@ public class HandGrenadeManager
         }
         PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(projectileResource);
         HandGrenade _spawnedGrenade = (HandGrenade)_projectileScene.Instance();
+
         
         // add to scene so physics process is in use
         MainNode.AddChild(_spawnedGrenade);
 
         _primedGrenade1Name = _spawnedGrenade.GetName();
 
-        _spawnedGrenade.Prime(p, damage);
+        _spawnedGrenade.Prime(p, damage, GrenadeType);
         _primedGrenade1 = _spawnedGrenade;
     }
 
