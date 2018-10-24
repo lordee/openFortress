@@ -11,13 +11,20 @@ public class HandGrenadeManager
         get { return _primedGrenade1; }
     }
     private string _primedGrenade1Name;
+
+    HandGrenade _primedGrenade2;
+    public HandGrenade PrimedGrenade2 {
+        get { return _primedGrenade2; }
+    }
+    private string _primedGrenade2Name;
+
     public Node MainNode;
 
     public HandGrenadeManager()
     {
     }
 
-    public void PrimeGren1(Player p, Ammunition GrenadeType)
+    public void PrimeGren(Player p, Ammunition GrenadeType, int grenNum)
     {
         // play grentimer
         AudioStreamPlayer gt = (AudioStreamPlayer)p.GetNode("GrenTimer");
@@ -31,35 +38,55 @@ public class HandGrenadeManager
                 projectileResource = FragGrenade.ProjectileResource;
                 damage = FragGrenade.Damage;
             break;
+            case Ammunition.ConcussionGrenade:
+                projectileResource = ConcussionGrenade.ProjectileResource;
+            break;
         }
         PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(projectileResource);
         HandGrenade _spawnedGrenade = (HandGrenade)_projectileScene.Instance();
-
         
         // add to scene so physics process is in use
         MainNode.AddChild(_spawnedGrenade);
 
-        _primedGrenade1Name = _spawnedGrenade.GetName();
-
-        _spawnedGrenade.Prime(p, damage, GrenadeType);
-        _primedGrenade1 = _spawnedGrenade;
-    }
-
-    public void PrimeGren2()
-    {
-
-    }
-
-    public void ThrowGren1(Transform t, Player p, Ammunition GrenadeType)
-    {
-        if (MainNode.HasNode(_primedGrenade1Name))
+        if (grenNum == 1)
         {
-            _primedGrenade1.Throw(t);
+            _primedGrenade1Name = _spawnedGrenade.GetName();
+            _primedGrenade1 = _spawnedGrenade;
         }
         else
         {
-            PrimeGren1(p, GrenadeType);
+            _primedGrenade2Name = _spawnedGrenade.GetName();
+            _primedGrenade2 = _spawnedGrenade;
         }
-        _primedGrenade1 = null;
+
+        _spawnedGrenade.Prime(p, damage, GrenadeType);
+    }
+
+    public void ThrowGren(Transform t, Player p, Ammunition GrenadeType, int grenNum)
+    {
+        if (MainNode.HasNode(_primedGrenade1Name))
+        {
+            if (grenNum == 1)
+            {
+                _primedGrenade1.Throw(t);
+            }
+            else
+            {
+                _primedGrenade2.Throw(t);
+            }
+        }
+        else
+        {
+            PrimeGren(p, GrenadeType, grenNum);
+        }
+
+        if (grenNum == 1)
+        {
+            _primedGrenade1 = null;
+        }
+        else
+        {
+            _primedGrenade2 = null;   
+        }
     }
 }

@@ -96,6 +96,50 @@ abstract public class HandGrenade : KinematicBody
 
     public void Explode(float damage)
     {
+        
+
+        object[] result = this.FindPlayersInRadius();
+        
+        foreach (Dictionary<object, object>  r in result) {
+            if (r["collider"] is Player pl)
+            {
+                GD.Print("found player");
+                // find how far from explosion as a percentage
+                float dist = this.Transform.origin.DistanceTo(pl.Transform.origin);
+                dist = dist > this._areaOfEffectRadius ? (this._areaOfEffectRadius*.99f) : dist;
+                float pc = ((this._areaOfEffectRadius - dist) / this._areaOfEffectRadius);
+                GD.Print("dam: " + damage);
+                GD.Print("pc: " + pc);
+                GD.Print("dist: " + dist);
+                
+                switch (_grenadeType)
+                {
+                    case Ammunition.FragGrenade:
+                        // apply percentage to damage
+                        float d = damage * pc;
+                        GD.Print("inflicted dam: " + d);
+                        // inflict damage
+                        pl.TakeDamage(this.Transform, this.GetType().ToString().ToLower(), 0, this._playerOwner, d);
+                    break;
+                    case Ammunition.ConcussionGrenade:
+                        pl.AddVelocity(this.Transform.origin, ConcussionGrenade.BlastPower * (1 - pc));
+                    break;
+                }               
+            }
+        }
+        
+        Particles p = (Particles)_particleScene.Instance();
+        p.Transform = this.GetGlobalTransform();
+        GetNode("/root/OpenFortress/Main").AddChild(p);
+        p.Emitting = true;
+        
+        // remove projectile
+        _playerOwner.PrimedGrenade = null;
+        GetTree().QueueDelete(this);
+    }
+
+    private object[] FindPlayersInRadius()
+    {
         SphereShape s = new SphereShape();
         s.SetRadius(_areaOfEffectRadius);
 
@@ -109,32 +153,8 @@ abstract public class HandGrenade : KinematicBody
         par.Transform = this.Transform;
         
         object[] result = state.IntersectShape(par);
-        foreach (Dictionary<object, object>  r in result) {
-            if (r["collider"] is Player pl)
-            {
-                GD.Print("found player");
-                // find how far from explosion as a percentage, apply to damage
-                float dist = this.Transform.origin.DistanceTo(pl.Transform.origin);
-                dist = dist > this._areaOfEffectRadius ? (this._areaOfEffectRadius*.99f) : dist;
-                float pc = ((this._areaOfEffectRadius - dist) / this._areaOfEffectRadius);
-                float d = damage * pc;
-                GD.Print("dam: " + damage);
-                GD.Print("pc: " + pc);
-                GD.Print("dist: " + dist);
-                GD.Print("inflicted dam: " + d);
-                // inflict damage
-                pl.TakeDamage(this.Transform, this.GetType().ToString().ToLower(), 0, this._playerOwner, d);
-            }
-        }
-        
-        Particles p = (Particles)_particleScene.Instance();
-        p.Transform = this.GetGlobalTransform();
-        GetNode("/root/OpenFortress/Main").AddChild(p);
-        p.Emitting = true;
-        
-        // remove projectile
-        _playerOwner.PrimedGrenade = null;
-        GetTree().QueueDelete(this);
+
+        return result;
     }
 }
 
@@ -154,7 +174,8 @@ public static class MFTGrenade
 public static class ConcussionGrenade
 {
     public static float Damage = 0;
-    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
+    public static float BlastPower = 30;
+    public static string ProjectileResource = "res://Scenes/Weapons/FragGrenade.tscn";
 }
 
 public static class NailGrenade

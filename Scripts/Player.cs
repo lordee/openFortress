@@ -340,14 +340,29 @@ public class Player : KinematicBody
                 if (this.Class.HandGrenadeManager.PrimedGrenade1 != null)
                 {
                     // throw it
-                    this.Class.HandGrenadeManager.ThrowGren1(camera.GetGlobalTransform(), this, this.Class.Gren1);
+                    this.Class.HandGrenadeManager.ThrowGren(camera.GetGlobalTransform(), this, this.Class.Gren1, 1);
                 }
                 else if (this._currentGren1 > 0)
                 {
                     // prime new gren1
-                    this.Class.HandGrenadeManager.PrimeGren1(this, this.Class.Gren1);                 
+                    this.Class.HandGrenadeManager.PrimeGren(this, this.Class.Gren1, 1);
                    
                     _currentGren1 -= 1;
+                }
+            }
+            else if (Input.IsActionJustPressed("gren2"))
+            {
+                if (this.Class.HandGrenadeManager.PrimedGrenade2 != null)
+                {
+                    // throw it
+                    this.Class.HandGrenadeManager.ThrowGren(camera.GetGlobalTransform(), this, this.Class.Gren2, 2);
+                }
+                else if (this._currentGren2 > 0)
+                {
+                    // prime new gren2
+                    this.Class.HandGrenadeManager.PrimeGren(this, this.Class.Gren2, 2);
+                   
+                    _currentGren2 -= 1;
                 }
             }
         }
@@ -497,12 +512,17 @@ public class Player : KinematicBody
         }
 
         // add velocity
+        AddVelocity(inflictorTransform.origin, damage);
+    }
+
+    public void AddVelocity(Vector3 inflictorOrigin, float speedToAdd)
+    {
         GD.Print("p origin: " + this.Transform.origin);
-        GD.Print("inflict origin: " + inflictorTransform.origin);
-        GD.Print("damage to speed: " + damage);
-        Vector3 dir = this.Transform.origin - inflictorTransform.origin;
+        GD.Print("inflict origin: " + inflictorOrigin);
+        GD.Print("damage to speed: " + speedToAdd);
+        Vector3 dir = this.Transform.origin - inflictorOrigin;
         dir = dir.Normalized();
-        dir = dir * damage;
+        dir = dir * speedToAdd;
         this.playerVelocity += dir;
     }
 
