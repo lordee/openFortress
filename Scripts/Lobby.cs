@@ -33,6 +33,7 @@ public class Lobby : Control
 	    PackedScene main = (PackedScene)ResourceLoader.Load("res://Scenes/Main.tscn");
         Main inst = (Main)main.Instance();
         Node of = GetNode("/root/OpenFortress");
+
         of.AddChild(inst);
         // connect deferred so we can safely erase it from the callback
 	    //inst.Connect("game_finished", this, "_End_Game", null, 1);

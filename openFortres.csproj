@@ -71,5 +71,11 @@
     <Compile Include="Scripts\Weapons.cs" />
     <Compile Include="Scripts\Ammunition.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="\home\danni\Code\LibBSP\LibBSP\LibBSP.csproj">
+      <Project>{33e4ffca-8d0b-4089-afd2-527547531578}</Project>
+      <Name>LibBSP</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
