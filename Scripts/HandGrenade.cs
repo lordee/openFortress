@@ -38,9 +38,28 @@ abstract public class HandGrenade : KinematicBody
 
     public override void _PhysicsProcess(float delta)
     {
-        
-
         _primedTime += delta;
+
+        // let grenade "drop" for a frame
+        if (_explodeNextTick)
+        {
+            this.Explode(_damage);
+        }
+        
+        // after 3 seconds, explode
+        if (_primedTime > _lifeTime)
+        {
+            if (_thrown)
+            {
+                this.Explode(_damage);
+            }
+            else
+            {
+                this.Transform = this._playerOwner.GetGlobalTransform();
+                _explodeNextTick = true;
+            }
+        }
+
         if (_thrown || _explodeNextTick)
         {
             _velocity = _direction * _currentSpeed;  
@@ -58,35 +77,7 @@ abstract public class HandGrenade : KinematicBody
                 // apply gravity
                 _direction.y -= _gravity * delta;
             }
-        }
-
-        if (_explodeNextTick)
-        {
-            // let grenade "drop" for a frame
-            if (_throwCount >= 1)
-            {
-                this.Explode(_damage);
-            }
-            else
-            {
-                _throwCount++;
-            }
-            
-        }
-        
-        // after 3 seconds, explode
-        if (_primedTime > _lifeTime)
-        {
-            if (_thrown)
-            {
-                this.Explode(_damage);
-            }
-            else
-            {
-                this.Transform = this._playerOwner.GetGlobalTransform();
-                _explodeNextTick = true;
-            }
-        }
+        }       
     }
 
     public void Prime(Player pOwner, float damage)
@@ -170,13 +161,6 @@ public static class MFTGrenade
 }
 
 public static class ConcussionGrenade
-{
-    public static float Damage = 0;
-    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-}
-
-// this is useless, replace it with something
-public static class Flare
 {
     public static float Damage = 0;
     public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
