@@ -9,7 +9,7 @@ public class Projectile : KinematicBody
     protected int _speed;
     protected float _damage;
     protected string _particleResource;
-    private PackedScene _particleScene;
+    protected PackedScene _particleScene;
     protected bool _areaOfEffect;
     protected float _areaOfEffectRadius;
     protected Player _playerOwner;
@@ -18,6 +18,7 @@ public class Projectile : KinematicBody
     {
         get { return _weaponOwner; }
     }
+    protected string _weaponOwnerString;
     protected float _currentSpeed;
 
     public Projectile()
@@ -34,6 +35,7 @@ public class Projectile : KinematicBody
         _particleScene = (PackedScene)ResourceLoader.Load(_particleResource);
         _playerOwner = pOwner;
         _weaponOwner = wOwner;
+        _weaponOwnerString = _weaponOwner.GetType().ToString().ToLower();
         _speed = speed;
         _currentSpeed = _speed;
         _damage = damage;
@@ -55,12 +57,8 @@ public class Projectile : KinematicBody
             // if c collider is kinematic body (direct hit)
             if (c.Collider is Player pl)
             {
-                // i think this isn't needed anymore thanks to addcollisionexceptionwith
-                if (pl != this._playerOwner)
-                {
-                    pl.TakeDamage(this.Transform, _weaponOwner.GetType().ToString().ToLower(), _weaponOwner.InflictLength, _playerOwner, damage);
-                    this.Explode(pl, damage);
-                }
+                pl.TakeDamage(this.Transform, _weaponOwnerString, _weaponOwner.InflictLength, _playerOwner, damage);
+                this.Explode(pl, damage);
             }
             else {
                 this.Explode(null, damage);
@@ -125,7 +123,7 @@ public class Projectile : KinematicBody
                     }
                     GD.Print("inflicted dam: " + d);
                     // inflict damage
-                    pl.TakeDamage(this.Transform, _weaponOwner.GetType().ToString().ToLower(), _weaponOwner.InflictLength, this._playerOwner, d);
+                    pl.TakeDamage(this.Transform, _weaponOwnerString, _weaponOwner == null ? 0 : _weaponOwner.InflictLength, this._playerOwner, d);
                 }
             }
         }

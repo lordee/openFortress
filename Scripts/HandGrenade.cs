@@ -20,7 +20,6 @@ abstract public class HandGrenade : KinematicBody
     private PackedScene _projectileScene;
     private Player _playerOwner;
     private Ammunition _grenadeType;
-    private string _projectileResource;
     private bool _thrown = false;
 
     public HandGrenade()
@@ -95,9 +94,7 @@ abstract public class HandGrenade : KinematicBody
     }
 
     public void Explode(float damage)
-    {
-        
-
+    {       
         object[] result = this.FindPlayersInRadius();
         
         foreach (Dictionary<object, object>  r in result) {
@@ -124,7 +121,21 @@ abstract public class HandGrenade : KinematicBody
                     case Ammunition.ConcussionGrenade:
                         pl.AddVelocity(this.Transform.origin, ConcussionGrenade.BlastPower * (1 - pc));
                     break;
-                }               
+                    case Ammunition.MIRVGrenade:
+                        // spawn child grenades
+                        for (int i = 0; i < 4; i++)
+                        {
+                             // spawn projectile, set it moving
+                            Grenade _projectileMesh = (Grenade)_projectileScene.Instance();
+                            
+                            // add to scene
+                            GetNode("/root/OpenFortress/Main").AddChild(_projectileMesh);
+
+                            _projectileMesh.MIRVInit(this.GetGlobalTransform(), _playerOwner, "mirvgrenade", 20, 100);
+                            i++;
+                        }
+                    break;
+                }
             }
         }
         
@@ -187,7 +198,8 @@ public static class NailGrenade
 public static class MIRVGrenade
 {
     public static float Damage = 30;
-    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
+    public static string ProjectileResource = "res://Scenes/Weapons/FragGrenade.tscn";
+    public static string MIRVResource = "res://Scenes/Weapons/Grenade.tscn";
 }
 
 public static class NapalmGrenade
