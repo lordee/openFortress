@@ -17,7 +17,6 @@ abstract public class HandGrenade : KinematicBody
     private float _areaOfEffectRadius = 5f;
     private string _particleResource = "res://Scenes/Weapons/RocketExplosion.tscn";
     private PackedScene _particleScene;
-    private PackedScene _projectileScene;
     private Player _playerOwner;
     private Ammunition _grenadeType;
     private bool _thrown = false;
@@ -96,7 +95,41 @@ abstract public class HandGrenade : KinematicBody
     public void Explode(float damage)
     {       
         object[] result = this.FindPlayersInRadius();
-        
+        switch (_grenadeType)
+        {
+            case Ammunition.MIRVGrenade:
+                // spawn child grenades
+                PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(MIRVGrenade.MIRVResource);
+                Grenade[] mirvs = new Grenade[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    // spawn projectile, set it moving
+                    Grenade _projectileMesh = (Grenade)_projectileScene.Instance();
+                    
+                    // add to scene
+                    GetNode("/root/OpenFortress/Main").AddChild(_projectileMesh);
+                    Random ran = new Random();
+                    // random needs to be more random... loop too quick? diff threads? i don't know
+                    throw new NotImplementedException();
+                    Vector3 dir = new Vector3(ran.Next(150), ran.Next(150), ran.Next(150));
+                    _projectileMesh.MIRVInit(this.GetGlobalTransform(), _playerOwner, "mirvgrenade", 20, 100, dir);
+                    mirvs[i] = _projectileMesh;
+                }
+
+                // make sure they don't just bounce on each other and float in air
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int i2 = 0; i2 < 4; i2++)
+                    {
+                        if (i2 != i)
+                        {
+                            mirvs[i].AddCollisionExceptionWith(mirvs[i2]);
+                        }
+                    }
+                }
+            break;
+        }
+
         foreach (Dictionary<object, object>  r in result) {
             if (r["collider"] is Player pl)
             {
@@ -111,6 +144,7 @@ abstract public class HandGrenade : KinematicBody
                 
                 switch (_grenadeType)
                 {
+                    case Ammunition.MIRVGrenade:
                     case Ammunition.FragGrenade:
                         // apply percentage to damage
                         float d = damage * pc;
@@ -120,20 +154,6 @@ abstract public class HandGrenade : KinematicBody
                     break;
                     case Ammunition.ConcussionGrenade:
                         pl.AddVelocity(this.Transform.origin, ConcussionGrenade.BlastPower * (1 - pc));
-                    break;
-                    case Ammunition.MIRVGrenade:
-                        // spawn child grenades
-                        for (int i = 0; i < 4; i++)
-                        {
-                             // spawn projectile, set it moving
-                            Grenade _projectileMesh = (Grenade)_projectileScene.Instance();
-                            
-                            // add to scene
-                            GetNode("/root/OpenFortress/Main").AddChild(_projectileMesh);
-
-                            _projectileMesh.MIRVInit(this.GetGlobalTransform(), _playerOwner, "mirvgrenade", 20, 100);
-                            i++;
-                        }
                     break;
                 }
             }

@@ -41,6 +41,10 @@ public class HandGrenadeManager
             case Ammunition.ConcussionGrenade:
                 projectileResource = ConcussionGrenade.ProjectileResource;
             break;
+            case Ammunition.MIRVGrenade:
+                projectileResource = MIRVGrenade.ProjectileResource;
+                damage = MIRVGrenade.Damage;
+            break;
         }
         PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(projectileResource);
         HandGrenade _spawnedGrenade = (HandGrenade)_projectileScene.Instance();

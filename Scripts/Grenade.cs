@@ -52,27 +52,24 @@ public class Grenade : Projectile
         }
     }
 
-    public void MIRVInit(Transform t, Player pOwner, string weaponOwnerString, int speed, float damage)
+    public void MIRVInit(Transform t, Player pOwner, string weaponOwnerString, int speed, float damage, Vector3 dir)
     {
+        Random ran = new Random();
         this.Transform = t;
         
-        // do a random vector
-        throw new NotImplementedException();       
-        Vector3 init = new Vector3();
-        init -= this.Transform.basis.z;      
-        this.SetTranslation(this.GetTranslation() + init);
-
         _particleScene = (PackedScene)ResourceLoader.Load(_particleResource);
         _playerOwner = pOwner;
         _weaponOwnerString = weaponOwnerString;
         _speed = speed;
         _currentSpeed = _speed;
         _damage = damage;
-        _direction -= this.Transform.basis.z;
+        // do a random vector
+        
+        
+        _direction -= dir;
         _direction = _direction.Normalized();
-
+        GD.Print(this.GetName() + " " + dir);
         // add collision exception with all players
-        throw new NotImplementedException();
         this.AddCollisionExceptionWith(pOwner);
     }
 }

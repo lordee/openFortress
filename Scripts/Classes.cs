@@ -195,7 +195,7 @@ public class Soldier : TFClass
         _maxNails = 50;
         _maxRockets = 50;
         _maxCells = 50;
-        _maxGren1 = 100;
+        _maxGren1 = 4;
         _maxGren2 = 2;
     }
 }
@@ -217,7 +217,7 @@ public class Demoman : TFClass
         _maxRockets = 50;
         _maxCells = 50;
         _maxGren1 = 4;
-        _maxGren2 = 4;
+        _maxGren2 = 100;
     }
 }
 

@@ -49,7 +49,6 @@ public class Projectile : KinematicBody
         Vector3 vel = _direction * _speed;
         Vector3 motion = vel * delta;
         KinematicCollision c = this.MoveAndCollide(motion);
-        
         if (c != null)
         {
             Random ran = new Random();
@@ -68,7 +67,6 @@ public class Projectile : KinematicBody
 
     public void Explode(Player ignore, float damage)
     {
-        GD.Print("exploding");
         if (_areaOfEffect)
         {
             this.FindRadius(ignore, damage);
@@ -85,7 +83,6 @@ public class Projectile : KinematicBody
 
     protected void FindRadius(Player ignore, float damage)
     {
-        GD.Print("findradius");
         // test for radius damage
         SphereShape s = new SphereShape();
         s.SetRadius(_areaOfEffectRadius);
