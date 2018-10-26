@@ -38,6 +38,7 @@ public class HandGrenadeManager
                 projectileResource = FragGrenade.ProjectileResource;
                 damage = FragGrenade.Damage;
             break;
+            case Ammunition.MFTGrenade:
             case Ammunition.ConcussionGrenade:
                 projectileResource = ConcussionGrenade.ProjectileResource;
             break;

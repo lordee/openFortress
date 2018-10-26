@@ -150,7 +150,12 @@ abstract public class HandGrenade : KinematicBody
                         // inflict damage
                         pl.TakeDamage(this.Transform, this.GetType().ToString().ToLower(), 0, this._playerOwner, d);
                     break;
+                    case Ammunition.MFTGrenade:
+                        pl.AddVelocity(this.Transform.origin, ConcussionGrenade.BlastPower * (1 - pc));
+                    break;
                     case Ammunition.ConcussionGrenade:
+                        throw new NotImplementedException();
+                        pl.Inflict(Concussion);
                         pl.AddVelocity(this.Transform.origin, ConcussionGrenade.BlastPower * (1 - pc));
                     break;
                 }
@@ -197,7 +202,8 @@ public static class FragGrenade
 public static class MFTGrenade
 {
     public static float Damage = 0;
-    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
+    public static float BlastPower = 30;
+    public static string ProjectileResource = "res://Scenes/Weapons/FragGrenade.tscn";
 }
 
 public static class ConcussionGrenade
