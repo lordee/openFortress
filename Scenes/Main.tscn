@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=2]
+[gd_scene load_steps=29 format=2]
 
 [ext_resource path="res://Scripts/Main.cs" type="Script" id=1]
 [ext_resource path="res://Assets/Textures/noon_grass_2k.hdr" type="Texture" id=2]
@@ -8,9 +8,8 @@
 [ext_resource path="res://Assets/Models/Ladder.obj" type="ArrayMesh" id=6]
 [ext_resource path="res://Assets/Textures/100_1449_seamless.JPG" type="Texture" id=7]
 [ext_resource path="res://Assets/Textures/Checkered.png" type="Texture" id=8]
-[ext_resource path="res://Assets/Sprites/Crosshair 1.png" type="Texture" id=9]
-[ext_resource path="res://Scenes/cube.tscn" type="PackedScene" id=10]
-[ext_resource path="res://Scenes/UI.tscn" type="PackedScene" id=11]
+[ext_resource path="res://Scenes/cube.tscn" type="PackedScene" id=9]
+[ext_resource path="res://Scenes/UI.tscn" type="PackedScene" id=10]
 
 [sub_resource type="PanoramaSky" id=1]
 
@@ -325,7 +324,7 @@ subdivide_depth = 0
 
 data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1 )
 
-[node name="Main" type="Spatial"]
+[node name="Main" type="Spatial" index="0"]
 
 script = ExtResource( 1 )
 _sections_unfolded = [ "Transform", "Visibility" ]
@@ -543,44 +542,24 @@ constant_angular_velocity = Vector3( 0, 0, 0 )
 shape = SubResource( 18 )
 disabled = false
 
-[node name="CrosshairControl" type="Control" parent="." index="8"]
-
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-rect_pivot_offset = Vector2( 0, 0 )
-rect_clip_content = false
-mouse_filter = 0
-mouse_default_cursor_shape = 0
-size_flags_horizontal = 1
-size_flags_vertical = 1
-_sections_unfolded = [ "Margin" ]
-
-[node name="Crosshair" type="Sprite" parent="CrosshairControl" index="0"]
-
-scale = Vector2( 0.1, 0.1 )
-texture = ExtResource( 9 )
-_sections_unfolded = [ "Transform" ]
-
-[node name="Box" parent="." index="9" instance=ExtResource( 10 )]
+[node name="Box" parent="." index="8" instance=ExtResource( 9 )]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6035, 6.3294, -10.7752 )
 
-[node name="SpawnPoint" type="Spatial" parent="." index="10" groups=[
+[node name="SpawnPoint" type="Spatial" parent="." index="9" groups=[
 "SpawnTeam1",
 ]]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 15.1688, 30 )
 _sections_unfolded = [ "Transform" ]
 
-[node name="SpawnPoint2" type="Spatial" parent="." index="11" groups=[
+[node name="SpawnPoint2" type="Spatial" parent="." index="10" groups=[
 "SpawnTeam2",
 ]]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 12, -20 )
 _sections_unfolded = [ "Transform" ]
 
-[node name="UI" parent="." index="12" instance=ExtResource( 11 )]
+[node name="UI" parent="." index="11" instance=ExtResource( 10 )]
 
 
