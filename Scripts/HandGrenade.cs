@@ -101,6 +101,7 @@ abstract public class HandGrenade : KinematicBody
                 // spawn child grenades
                 PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(MIRVGrenade.MIRVResource);
                 Grenade[] mirvs = new Grenade[4];
+                Random ran = new Random();
                 for (int i = 0; i < 4; i++)
                 {
                     // spawn projectile, set it moving
@@ -108,9 +109,6 @@ abstract public class HandGrenade : KinematicBody
                     
                     // add to scene
                     GetNode("/root/OpenFortress/Main").AddChild(_projectileMesh);
-                    Random ran = new Random();
-                    // random needs to be more random... loop too quick? diff threads? i don't know
-                    throw new NotImplementedException();
                     Vector3 dir = new Vector3(ran.Next(150), ran.Next(150), ran.Next(150));
                     _projectileMesh.MIRVInit(this.GetGlobalTransform(), _playerOwner, "mirvgrenade", 20, 100, dir);
                     mirvs[i] = _projectileMesh;

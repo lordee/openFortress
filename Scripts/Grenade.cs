@@ -63,9 +63,6 @@ public class Grenade : Projectile
         _speed = speed;
         _currentSpeed = _speed;
         _damage = damage;
-        // do a random vector
-        
-        
         _direction -= dir;
         _direction = _direction.Normalized();
         GD.Print(this.GetName() + " " + dir);
