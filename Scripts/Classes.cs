@@ -217,7 +217,7 @@ public class Demoman : TFClass
         _maxRockets = 50;
         _maxCells = 50;
         _maxGren1 = 4;
-        _maxGren2 = 100;
+        _maxGren2 = 4;
     }
 }
 
@@ -238,7 +238,7 @@ public class Medic : TFClass
         _maxRockets = 50;
         _maxCells = 50;
         _maxGren1 = 4;
-        _maxGren2 = 3;
+        _maxGren2 = 100;
     }
 }
 

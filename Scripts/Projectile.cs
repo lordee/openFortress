@@ -21,17 +21,16 @@ public class Projectile : KinematicBody
     protected string _weaponOwnerString;
     protected float _currentSpeed;
 
+    
+
     public Projectile()
     {
     }
 
-    public void Init(Transform t, Player pOwner, Weapon wOwner, int speed, float damage)
-    {       
+    public void Init(Transform t, Vector3 aimAt, Player pOwner, Weapon wOwner, int speed, float damage)
+    {   
+        this.AddCollisionExceptionWith(pOwner);
         this.Transform = t;
-        Vector3 init = new Vector3();
-        init -= this.Transform.basis.z;
-        // spawn it in front of player
-        this.SetTranslation(this.GetTranslation() + init);
         _particleScene = (PackedScene)ResourceLoader.Load(_particleResource);
         _playerOwner = pOwner;
         _weaponOwner = wOwner;
@@ -39,9 +38,8 @@ public class Projectile : KinematicBody
         _speed = speed;
         _currentSpeed = _speed;
         _damage = damage;
-        _direction -= this.Transform.basis.z;
+        _direction = aimAt;
         _direction = _direction.Normalized();
-        this.AddCollisionExceptionWith(pOwner);
     }
 
     public override void _PhysicsProcess(float delta)

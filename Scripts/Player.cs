@@ -63,6 +63,41 @@ public class Player : KinematicBody
     private List<DiseasedData> _diseasedBy = new List<DiseasedData>();
     private float _diseasedInterval = 0f;
 
+    private bool _concussed = false;
+    public bool Concussed {
+        get { return _concussed; }
+        set {
+            if (!_concussed)
+            {
+                // only set new position if they aren't currently concussed
+                _concussionCrosshairDestination = GetConcussionCrosshairDestination(value);
+            }
+            _concussed = value;
+            _timeSinceConcussed = 0f;
+            if (!value)
+            {
+                // reset crosshair coords
+                Crosshair.Position = GetConcussionCrosshairDestination(value);
+            }
+        }
+    }
+    private float _concussedLength = 0f;
+    private float _timeSinceConcussed = 0f;
+    public float TimeSinceConcussed {
+        get { return _timeSinceConcussed; }
+        set {
+            _timeSinceConcussed = value;
+            if (_concussed)
+            {
+                if (_timeSinceConcussed >= _concussedLength)
+                {
+                    Concussed = false;
+                }
+            }
+        }
+    }
+    private Vector2 _concussionCrosshairDestination;
+
     private HandGrenade _primedGrenade;
     public HandGrenade PrimedGrenade
     {
@@ -102,6 +137,16 @@ public class Player : KinematicBody
     RayCast stairCatcher;
     Label HealthLabel;
     Label ArmourLabel;
+    private Sprite _crosshair;
+    public Sprite Crosshair {
+        get {
+            if (_crosshair == null)
+            {
+                _crosshair = (Sprite)GetNode("/root/OpenFortress/Main/UI/Crosshair");
+            }
+            return _crosshair;
+        }
+    }
 
     private Main _mainNode;
     public Main MainNode {
@@ -381,6 +426,24 @@ public class Player : KinematicBody
                     this.TakeDamage(this.Transform, dd.Inflictor.GetType().ToString().ToLower(), dd.Inflictor.InflictLength, dd.Attacker, dd.Inflictor.Damage);
                 }
             }
+            
+            TimeSinceConcussed += delta;
+            if (Concussed)
+            {
+                // if crosshair within percentage of final destination, set new coords
+                if (Math.Abs(_concussionCrosshairDestination.x - Crosshair.Position.x) < 10 
+                    && Math.Abs(_concussionCrosshairDestination.y - Crosshair.Position.y) < 10)
+                    {
+                        _concussionCrosshairDestination = GetConcussionCrosshairDestination(true);
+                    }
+                
+                // move crosshair towards coords (change this later to an arc that changes constantly)
+                Vector2 targ = (Crosshair.Position - _concussionCrosshairDestination).Normalized();
+
+                Vector2 motion = targ * 50 * delta;
+
+                Crosshair.Position -= motion;
+            }
 
             // shooting
             if (Input.IsActionPressed("attack"))
@@ -471,10 +534,10 @@ public class Player : KinematicBody
         }
     }
 
-    public void TakeDamage(Transform inflictorTransform, string inflictorType, float inflictLength, Player attacker, float damage)
+    public void Inflict(string inflictorType, float inflictLength, Player attacker)
     {
         // special stuff
-        switch (inflictorType)
+        switch (inflictorType.ToLower())
         {
             case "tranquiliser":
                 this.Tranquilised = true;
@@ -484,8 +547,17 @@ public class Player : KinematicBody
                 _diseasedBy.Add(new DiseasedData(attacker, inflictorType, 0f));
                 _diseasedInterval = inflictLength;
             break;
+            case "concussiongrenade":
+                Concussed = true;
+                _concussedLength = inflictLength;
+            break;
         }
+    }
 
+    public void TakeDamage(Transform inflictorTransform, string inflictorType, float inflictLength, Player attacker, float damage)
+    {
+        Inflict(inflictorType, inflictLength, attacker);
+        
         // take from armour and health
         int a = CurrentArmour;
         int h = CurrentHealth;
@@ -535,6 +607,25 @@ public class Player : KinematicBody
         // log the death
     }
 
+    private Vector2 GetConcussionCrosshairDestination(bool concussed)
+    {
+        Vector2 pos = new Vector2();
+        if (concussed)
+        {
+            Random ran = new Random();
+            pos.x = ran.Next(256,768);
+            pos.y = ran.Next(150,450);
+        }
+        else
+        {
+            // center it
+            pos.x = 512;
+            pos.y = 300;
+        }
+
+        return pos;
+    }
+
     private void Shoot()
     {
         // if there's enough ammunition
@@ -542,7 +633,7 @@ public class Player : KinematicBody
         if (ActiveAmmo >= ActiveWeapon.MinAmmoRequired)
         {
             // if weapon is off cooldown
-            if (ActiveWeapon.Shoot(camera, cameraCenter, this))
+            if (ActiveWeapon.Shoot(camera, Crosshair.Position, this))
             {
                 // modify current ammunition
                 ActiveAmmo -= ActiveWeapon.MinAmmoRequired;

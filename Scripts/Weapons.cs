@@ -62,7 +62,7 @@ abstract public class Weapon : MeshInstance
     protected PackedScene _projectileScene;
     protected int _projectileSpeed;
     protected WeaponType _weaponType;
-    protected float _shootRange = 0f;
+    protected float _shootRange = 10000f;
     protected float _inflictLength = 0f;
     public float InflictLength {
         get { return _inflictLength; }
@@ -151,7 +151,7 @@ abstract public class Weapon : MeshInstance
 
     public bool Reloading = false;
 
-    virtual public bool Shoot(Camera camera, Vector2 cameraCenter, Player shooter) 
+    virtual public bool Shoot(Camera camera, Vector2 aimAt, Player shooter) 
     {
         bool shot = false;
         // if enough ammunition in clip
@@ -172,6 +172,14 @@ abstract public class Weapon : MeshInstance
                 }
                 shootSound.Play();
                 
+                Vector3 shootOrigin = camera.ProjectRayOrigin(new Vector2(aimAt.x, aimAt.y));
+                Vector3 shootTo = camera.ProjectRayNormal(new Vector2(aimAt.x, aimAt.y)) * _shootRange;
+                Vector3 newTo = shootTo + shootOrigin;
+
+                GD.Print("orig: " + shootOrigin);
+                GD.Print("dest: " + shootTo);
+                GD.Print("newTo: " + newTo);
+                
                 switch (_weaponType)
                 {
                     case WeaponType.Hitscan:
@@ -180,8 +188,6 @@ abstract public class Weapon : MeshInstance
                         List<Tuple<Vector3, PuffType, Node>> puffList = new List<Tuple<Vector3, PuffType, Node>>();
                         Dictionary<KinematicBody, float> hitList = new Dictionary<KinematicBody, float>();
                         PhysicsDirectSpaceState spaceState = shooter.GetWorld().DirectSpaceState;
-                        Vector3 shootOrigin = camera.ProjectRayOrigin(new Vector2(cameraCenter.x, cameraCenter.y));
-                        Vector3 shootTo = camera.ProjectRayNormal(new Vector2(cameraCenter.x, cameraCenter.y)) * _shootRange;
                         
                         if (_weaponType == WeaponType.Spread)
                         {
@@ -191,7 +197,7 @@ abstract public class Weapon : MeshInstance
                             while (pc > 0)
                             {
                                 random = (float)ran.Next(0,100);
-                                Vector3 newTo = new Vector3((shootOrigin.x + shootTo.x) + random * _spread.x, (shootOrigin.y + shootTo.y) + random * _spread.y, shootOrigin.z + shootTo.z);
+                                newTo = new Vector3((shootOrigin.x + shootTo.x) + random * _spread.x, (shootOrigin.y + shootTo.y) + random * _spread.y, shootOrigin.z + shootTo.z);
                                 GD.Print("random: " + random);
                                 GD.Print("dir: " + newTo);
 
@@ -214,7 +220,6 @@ abstract public class Weapon : MeshInstance
                         }
                         else
                         {
-                            Vector3 newTo = shootTo + shootOrigin;
                             Tuple<Vector3, PuffType, Node, KinematicBody, float> data = this.DoHit(spaceState, shootOrigin, newTo, shooter);
 
                             if (data != null)
@@ -285,7 +290,8 @@ abstract public class Weapon : MeshInstance
                         _weaponMesh.GetNode("/root/OpenFortress/Main").AddChild(_projectileMesh);
                         
                         Transform t = camera.GetGlobalTransform();
-                        _projectileMesh.Init(t, shooter, this, _projectileSpeed, _damage);
+                        
+                        _projectileMesh.Init(t, newTo, shooter, this, _projectileSpeed, _damage);
 
                         if (_projectileMesh is Pipebomb p)
                         {

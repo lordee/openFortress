@@ -154,8 +154,7 @@ abstract public class HandGrenade : KinematicBody
                         pl.AddVelocity(this.Transform.origin, ConcussionGrenade.BlastPower * (1 - pc));
                     break;
                     case Ammunition.ConcussionGrenade:
-                        throw new NotImplementedException();
-                        pl.Inflict(Concussion);
+                        pl.Inflict("concussiongrenade", ConcussionGrenade.InflictLength, _playerOwner);
                         pl.AddVelocity(this.Transform.origin, ConcussionGrenade.BlastPower * (1 - pc));
                     break;
                 }
@@ -211,6 +210,7 @@ public static class ConcussionGrenade
     public static float Damage = 0;
     public static float BlastPower = 30;
     public static string ProjectileResource = "res://Scenes/Weapons/FragGrenade.tscn";
+    public static float InflictLength = 10;
 }
 
 public static class NailGrenade
