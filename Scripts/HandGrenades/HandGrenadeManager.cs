@@ -46,6 +46,9 @@ public class HandGrenadeManager
                 projectileResource = MIRVGrenade.ProjectileResource;
                 damage = MIRVGrenade.Damage;
             break;
+            case Ammunition.NailGrenade:
+                // create a nailgrenade
+            break;
         }
         PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(projectileResource);
         HandGrenade _spawnedGrenade = (HandGrenade)_projectileScene.Instance();

@@ -213,12 +213,6 @@ public static class ConcussionGrenade
     public static float InflictLength = 10;
 }
 
-public static class NailGrenade
-{
-    public static float Damage = 0;
-    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-}
-
 public static class MIRVGrenade
 {
     public static float Damage = 30;
