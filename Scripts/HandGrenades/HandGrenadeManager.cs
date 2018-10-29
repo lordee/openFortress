@@ -32,6 +32,7 @@ public class HandGrenadeManager
         
         string projectileResource = "";
         float damage = 0f;
+        
         switch (GrenadeType)
         {
             case Ammunition.FragGrenade:
@@ -48,6 +49,8 @@ public class HandGrenadeManager
             break;
             case Ammunition.NailGrenade:
                 // create a nailgrenade
+                damage = NailGrenade.Damage;
+                projectileResource = NailGrenade.ProjectileResource;
             break;
         }
         PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(projectileResource);

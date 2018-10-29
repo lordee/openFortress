@@ -13,7 +13,7 @@ abstract public class HandGrenade : KinematicBody
     private Vector3 _direction = new Vector3();
     private float _currentSpeed = 20;
     private float _gravity = 1.0f;
-    private float _damage;
+    protected float _damage;
     private float _areaOfEffectRadius = 5f;
     private string _particleResource = "res://Scenes/Weapons/RocketExplosion.tscn";
     private PackedScene _particleScene;
