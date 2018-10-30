@@ -65,7 +65,6 @@ public class Grenade : Projectile
         _damage = damage;
         _direction -= dir;
         _direction = _direction.Normalized();
-        GD.Print(this.GetName() + " " + dir);
         // add collision exception with all players
         this.AddCollisionExceptionWith(pOwner);
     }

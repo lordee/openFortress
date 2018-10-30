@@ -51,7 +51,10 @@
   <ItemGroup>
     
     <Compile Include="Scripts\HandGrenades\HandGrenade.cs" />
+    <Compile Include="Scripts\HandGrenades\FragGrenade.cs" />
+    <Compile Include="Scripts\HandGrenades\ConcussionGrenade.cs" />
     <Compile Include="Scripts\HandGrenades\NailGrenade.cs" />
+    <Compile Include="Scripts\HandGrenades\MIRVGrenade.cs" />
     <Compile Include="Scripts\HandGrenades\HandGrenadeManager.cs" />
     <Compile Include="Scripts\Lobby.cs" />
     <Compile Include="Scripts\Network.cs" />

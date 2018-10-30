@@ -31,25 +31,19 @@ public class HandGrenadeManager
         gt.Play();
         
         string projectileResource = "";
-        float damage = 0f;
         
         switch (GrenadeType)
         {
             case Ammunition.FragGrenade:
                 projectileResource = FragGrenade.ProjectileResource;
-                damage = FragGrenade.Damage;
             break;
-            case Ammunition.MFTGrenade:
             case Ammunition.ConcussionGrenade:
                 projectileResource = ConcussionGrenade.ProjectileResource;
             break;
             case Ammunition.MIRVGrenade:
                 projectileResource = MIRVGrenade.ProjectileResource;
-                damage = MIRVGrenade.Damage;
             break;
             case Ammunition.NailGrenade:
-                // create a nailgrenade
-                damage = NailGrenade.Damage;
                 projectileResource = NailGrenade.ProjectileResource;
             break;
         }
@@ -70,7 +64,7 @@ public class HandGrenadeManager
             _primedGrenade2 = _spawnedGrenade;
         }
 
-        _spawnedGrenade.Prime(p, damage, GrenadeType);
+        _spawnedGrenade.Prime(p);
     }
 
     public void ThrowGren(Transform t, Player p, Ammunition GrenadeType, int grenNum)
