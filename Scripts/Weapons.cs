@@ -291,7 +291,7 @@ abstract public class Weapon : MeshInstance
                         
                         Transform t = camera.GetGlobalTransform();
                         
-                        _projectileMesh.Init(t, newTo, shooter, this, _projectileSpeed, _damage);
+                        _projectileMesh.Init(t, newTo, shooter, this, this.GetType().ToString().ToLower(), 0, _projectileSpeed, _damage);
 
                         if (_projectileMesh is Pipebomb p)
                         {

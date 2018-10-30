@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 abstract public class HandGrenade : KinematicBody
 {
-    private float _activeTime = 0;
+    protected float _activeTime = 0;
     private float _maxPrimedTime = 3.0f;
 
     private bool _explodeNextTick = false;
@@ -21,6 +21,8 @@ abstract public class HandGrenade : KinematicBody
     private PackedScene _particleScene;
     protected Player _playerOwner;
     private bool _thrown = false;
+    // used by nail grenade to indicate if it should be getting affected by gravity, shooting nails etc
+    protected bool _stageOne = true;
 
     public HandGrenade()
     {
@@ -29,7 +31,7 @@ abstract public class HandGrenade : KinematicBody
     public override void _PhysicsProcess(float delta)
     {
         _activeTime += delta;
-
+        StageTwoPhysicsProcess(delta);
         // let grenade "drop" for a frame
         if (_explodeNextTick)
         {
@@ -50,7 +52,7 @@ abstract public class HandGrenade : KinematicBody
             }
         }
 
-        if (_thrown || _explodeNextTick)
+        if ((_thrown || _explodeNextTick) && _stageOne)
         {
             _velocity = _direction * _currentSpeed;  
             Vector3 motion = _velocity * delta;
@@ -68,6 +70,10 @@ abstract public class HandGrenade : KinematicBody
                 _direction.y -= _gravity * delta;
             }
         }       
+    }
+
+    virtual protected void StageTwoPhysicsProcess(float delta)
+    {
     }
 
     public void Prime(Player pOwner)
