@@ -21,7 +21,7 @@ public class NailGrenade : HandGrenade
         _damage = 30;
     }
 
-    override public void PrimeTimeFinished()
+    override protected void PrimeTimeFinished()
     {
         if (_stageOne)
         {
@@ -38,7 +38,7 @@ public class NailGrenade : HandGrenade
         else
         {
             // when lifetime ends, call explode
-            this.Explode(true, _damage);
+            this.Explode(_damage);
         }
     }
 

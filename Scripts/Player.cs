@@ -218,7 +218,23 @@ public class Player : KinematicBody
     private int _currentCells = 0;
     private int _currentGren1 = 0;
     private int _currentGren2 = 0;
-    private int CurrentCells {
+
+    public int CurrentShells {
+        get { return _currentShells; }
+        set {
+            _currentShells = value;
+            // update gui too
+        }
+    }
+
+    public int CurrentRockets {
+        get { return _currentRockets; }
+        set {
+            _currentRockets = value;
+            // update gui too
+        }
+    }
+    public int CurrentCells {
         get { return _currentCells; }
         set {
             _currentCells = value;

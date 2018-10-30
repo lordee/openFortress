@@ -49,7 +49,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    
+    <Compile Include="Scripts\HandGrenades\EMPGrenade.cs" />
     <Compile Include="Scripts\HandGrenades\HandGrenade.cs" />
     <Compile Include="Scripts\HandGrenades\FragGrenade.cs" />
     <Compile Include="Scripts\HandGrenades\ConcussionGrenade.cs" />

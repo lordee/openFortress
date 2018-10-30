@@ -16,7 +16,7 @@ abstract public class HandGrenade : KinematicBody
     private float _gravity = 1.0f;
     protected float _damage = 0;
     protected float _inflictLength = 0;
-    private float _areaOfEffectRadius = 5f;
+    protected float _areaOfEffectRadius = 5f;
     private string _particleResource = "res://Scenes/Weapons/RocketExplosion.tscn";
     private PackedScene _particleScene;
     protected Player _playerOwner;
@@ -97,12 +97,12 @@ abstract public class HandGrenade : KinematicBody
         this.Visible = true;
     }
 
-    virtual public void PrimeTimeFinished()
+    virtual protected void PrimeTimeFinished()
     {
-        this.Explode(true, _damage);
+        this.Explode(_damage);
     }
 
-    public void Explode(bool doDamage, float val)
+    virtual public void Explode(float val)
     {       
         object[] result = this.FindPlayersInRadius();
 
@@ -114,22 +114,18 @@ abstract public class HandGrenade : KinematicBody
                 dist = dist > this._areaOfEffectRadius ? (this._areaOfEffectRadius*.99f) : dist;
                 float pc = ((this._areaOfEffectRadius - dist) / this._areaOfEffectRadius);
 
-                if (doDamage)
-                {
-                    // apply percentage to damage
-                    float d = val * pc;
-                    // inflict damage
-                    pl.TakeDamage(this.Transform, this.GetType().ToString().ToLower(), 0, this._playerOwner, d);
-                }
-                else
-                {
-                    // concussiongrenade
-                    pl.Inflict("concussiongrenade", _inflictLength, _playerOwner);
-                    pl.AddVelocity(this.Transform.origin, val * (1 - pc));
-                }              
+                // apply percentage to damage
+                float d = val * pc;
+                // inflict damage
+                pl.TakeDamage(this.Transform, this.GetType().ToString().ToLower(), 0, this._playerOwner, d);
             }
         }
         
+        this.FinishExplode();
+    }
+
+    protected void FinishExplode()
+    {
         Particles p = (Particles)_particleScene.Instance();
         p.Transform = this.GetGlobalTransform();
         GetNode("/root/OpenFortress/Main").AddChild(p);
@@ -140,7 +136,7 @@ abstract public class HandGrenade : KinematicBody
         GetTree().QueueDelete(this);
     }
 
-    private object[] FindPlayersInRadius()
+    protected object[] FindPlayersInRadius()
     {
         SphereShape s = new SphereShape();
         s.SetRadius(_areaOfEffectRadius);
@@ -167,12 +163,6 @@ public static class NapalmGrenade
 }
 
 public static class GasGrenade
-{
-    public static float Damage = 0;
-    public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";
-}
-
-public static class EMPGrenade
 {
     public static float Damage = 0;
     public static string ProjectileResource = "res://Scenes/Weapons/Shotgun.tscn";

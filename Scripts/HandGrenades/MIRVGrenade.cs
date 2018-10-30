@@ -14,7 +14,7 @@ public class MIRVGrenade : HandGrenade
         _damage = 30;
     }
 
-    override public void PrimeTimeFinished()
+    override protected void PrimeTimeFinished()
     {
         // spawn child grenades
         PackedScene _projectileScene = (PackedScene)ResourceLoader.Load(MIRVGrenade.MIRVResource);
@@ -45,6 +45,6 @@ public class MIRVGrenade : HandGrenade
         }
 
         // now have original mirv explode
-        this.Explode(true, _damage);
+        this.Explode(_damage);
     }
 }
