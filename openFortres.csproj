@@ -74,7 +74,6 @@
     <Compile Include="Scripts\Projectile.cs" />
     <Compile Include="Scripts\TeamMenu.cs" />
     <Compile Include="Scripts\Weapons.cs" />
-    <Compile Include="Scripts\Ammunition.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="\home\danni\Code\LibBSP\LibBSP\LibBSP.csproj">

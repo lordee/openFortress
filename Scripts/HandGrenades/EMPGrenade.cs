@@ -16,10 +16,10 @@ public class EMPGrenade : HandGrenade
     override protected void PrimeTimeFinished()
     {
         // explode
-        this.Explode();
+        this.Explode(_damage);
     }
 
-    override public void Explode()
+    override public void Explode(float val)
     {
         // any players nearby
         object[] result = this.FindPlayersInRadius();

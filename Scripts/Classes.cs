@@ -196,7 +196,7 @@ public class Soldier : TFClass
         _maxRockets = 50;
         _maxCells = 50;
         _maxGren1 = 4;
-        _maxGren2 = 2;
+        _maxGren2 = 200;
     }
 }
 

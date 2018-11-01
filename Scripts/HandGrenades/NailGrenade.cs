@@ -19,6 +19,7 @@ public class NailGrenade : HandGrenade
     public NailGrenade()
     {
         _damage = 30;
+        _stageOne = true;
     }
 
     override protected void PrimeTimeFinished()
@@ -27,7 +28,7 @@ public class NailGrenade : HandGrenade
         {
             _stageOne = false;
             // set destination to rise from current location
-            _destination = this.Translation + new Vector3(0,10,0);
+            _destination = this.Translation + new Vector3(0,5,0);
             // reset activetime for stage two
             _activeTime = 0f;
             // add spawn point on grenade for nails
@@ -44,17 +45,18 @@ public class NailGrenade : HandGrenade
 
     override protected void StageTwoPhysicsProcess(float delta)
     {
-        _lastFired += delta;
         if (!_stageOne)
         {
             // grenade rises from current location
-            if (this.Translation.DistanceTo(_destination) < 1f)
+            if (this.Translation.DistanceTo(_destination) > 1f)
             {
+                GD.Print("distance: " + this.Translation.DistanceTo(_destination));
                 Vector3 motion = _destination.Normalized() * _speed * delta;
-                this.Translation = motion;
+                this.MoveAndCollide(motion);
             }
             else
             {
+                _lastFired += delta;
                 // grenade rotates
                 this.RotateY(Mathf.Deg2Rad(_rotationSpeed * delta));
                 // once grenade at destination, grenade fires nails for lifetime
