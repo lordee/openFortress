@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class NailGrenade : HandGrenade
 {
     public static string ProjectileResource = "res://Scenes/HandGrenades/NailGrenade.tscn";
+    private Vector3 _direction;
     private Vector3 _destination;
     private float _speed = 10;
     private float _rotationSpeed = 10;
@@ -27,8 +28,10 @@ public class NailGrenade : HandGrenade
         if (_stageOne)
         {
             _stageOne = false;
-            // set destination to rise from current location
-            _destination = this.Translation + new Vector3(0,5,0);
+            // set direction to rise from current location
+            _direction = new Vector3(0,3,0);
+            _destination = this.Translation + _direction;
+            _direction = _direction.Normalized();
             // reset activetime for stage two
             _activeTime = 0f;
             // add spawn point on grenade for nails
@@ -48,10 +51,9 @@ public class NailGrenade : HandGrenade
         if (!_stageOne)
         {
             // grenade rises from current location
-            if (this.Translation.DistanceTo(_destination) > 1f)
+            if (_destination.y - this.Translation.y > 1f)
             {
-                GD.Print("distance: " + this.Translation.DistanceTo(_destination));
-                Vector3 motion = _destination.Normalized() * _speed * delta;
+                Vector3 motion = _direction * _speed * delta;
                 this.MoveAndCollide(motion);
             }
             else
