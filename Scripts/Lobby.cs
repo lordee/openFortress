@@ -35,8 +35,6 @@ public class Lobby : Control
         Node of = GetNode("/root/OpenFortress");
 
         of.AddChild(inst);
-        // connect deferred so we can safely erase it from the callback
-	    //inst.Connect("game_finished", this, "_End_Game", null, 1);
 	
         _network = (Network)GetNode("/root/OpenFortress/Network");
         _network.NetworkID = GetTree().GetNetworkUniqueId();
@@ -86,18 +84,7 @@ public class Lobby : Control
     // Game creation functions
 
     private void _End_Game(string with_error)
-    {
-        /* 
-        Node pong = GetNode("/root/pong");
-        if (pong != null)
-        {
-            // erase pong scene
-            // erase immediately, otherwise network might show errors (this is why we connected deferred above)
-            pong.Free();
-            Show();
-        }
-        */
-        
+    {     
         // remove peer
         GetTree().SetNetworkPeer(null);
 
@@ -156,10 +143,8 @@ public class Lobby : Control
             return;
         }
 
-        NetworkedMultiplayerENet host = new NetworkedMultiplayerENet();
-        host.SetCompressionMode(NetworkedMultiplayerENet.CompressionModeEnum.RangeCoder);
-        host.CreateClient(ip, DEFAULT_PORT);
-        GetTree().SetNetworkPeer(host);
+        _network = (Network)GetNode("/root/OpenFortress/Network");
+        _network.OFConnect(ip, DEFAULT_PORT);
         
         _Set_Status("Connecting..", true);
     }

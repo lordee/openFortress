@@ -1,6 +1,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
 
 public class Network : Node
 {
@@ -18,6 +21,8 @@ public class Network : Node
     // server
     List<SnapShot> ClientSnapShots = new List<SnapShot>();
     List<int> ConnectedClients = new List<int>();
+
+    UdpClient udp = null;
 
 
     public override void _Ready()
@@ -39,6 +44,59 @@ public class Network : Node
             {
                 RpcUnreliableId(1, "ReceivePacket", packet);
             }
+        }
+    }
+
+    // client asks to connect to server
+    public void OFClientConnect(string ip, int port)
+    {
+        // send packet with connect request
+        udp = new UdpClient();
+        IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
+        udp.Connect(ep);
+        this.OFClientConnectChallenge();
+        this.OFClientConnectAttempt();
+    }
+
+    public void OFClientConnectChallenge()
+    {
+        udp.BeginReceive(new AsyncCallback(ReceiveConnectAck), udp);
+        byte[] cb = Encoding.ASCII.GetBytes("getChallenge");
+        udp.Send(cb, cb.Length);
+    }
+    public void OFClientConnectAttempt()
+    {
+        udp.BeginReceive(new AsyncCallback(ReceiveConnectAck), udp);
+        byte[] cb = Encoding.ASCII.GetBytes("connect\n" + NetworkID.ToString());
+        // add conn string info
+        udp.Send(cb, cb.Length);
+    }
+
+    private void ReceiveConnectAck(IAsyncResult result)
+    {
+        UdpClient socket = result.AsyncState as UdpClient;
+        IPEndPoint source = new IPEndPoint(0, 0);
+        // get the actual message and fill out the source
+        byte[] message = socket.EndReceive(result, ref source);
+        string msg = Encoding.ASCII.GetString(message);
+
+        Console.WriteLine("Got '" + msg + " from " + source);
+
+        string[] msgs = msg.Split("\n");
+ 
+        // if connected, get connection id
+        switch (msgs[0])
+        {
+            case "challengeResponse":
+                NetworkID = Convert.ToInt32(msgs[1]);
+                OFClientConnectAttempt();
+                // schedule the next receive operation once reading is done
+                socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
+            break;
+            default:
+                // for now retry, later we look at error codes
+                OFClientConnectChallenge();
+            break;
         }
     }
 
@@ -68,9 +126,11 @@ public class Network : Node
         return packet;
     }
 
-    [Remote]
     public void ReceivePacket(int packetNum, int clientID, int otherClientID, Vector3 trans)
     {
+        // check packet type
+
+
         // if client receives packet, check packet number in response, get rid of commands in history from this, stop resending
         if (packetNum > _acknowledgedPacketNumber)
         {
