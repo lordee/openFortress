@@ -144,7 +144,7 @@ public class Lobby : Control
         }
 
         _network = (Network)GetNode("/root/OpenFortress/Network");
-        _network.OFConnect(ip, DEFAULT_PORT);
+        _network.OFClientConnect(ip, DEFAULT_PORT);
         
         _Set_Status("Connecting..", true);
     }

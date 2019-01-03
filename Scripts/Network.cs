@@ -34,6 +34,11 @@ public class Network : Node
     {
         if (Active)
         {
+            // if client, build packet for one client only
+
+            // if server, build packet of all changed ents and communicate to all players
+            
+            
             // check if there is new data
             object[] packet = null;
 
@@ -55,24 +60,23 @@ public class Network : Node
         IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
         udp.Connect(ep);
         this.OFClientConnectChallenge();
-        this.OFClientConnectAttempt();
     }
 
     public void OFClientConnectChallenge()
     {
-        udp.BeginReceive(new AsyncCallback(ReceiveConnectAck), udp);
+        udp.BeginReceive(new AsyncCallback(OFClientReceiveConnectAck), udp);
         byte[] cb = Encoding.ASCII.GetBytes("getChallenge");
         udp.Send(cb, cb.Length);
     }
     public void OFClientConnectAttempt()
     {
-        udp.BeginReceive(new AsyncCallback(ReceiveConnectAck), udp);
+        udp.BeginReceive(new AsyncCallback(OFClientReceiveConnectAck), udp);
         byte[] cb = Encoding.ASCII.GetBytes("connect\n" + NetworkID.ToString());
         // add conn string info
         udp.Send(cb, cb.Length);
     }
 
-    private void ReceiveConnectAck(IAsyncResult result)
+    private void OFClientReceiveConnectAck(IAsyncResult result)
     {
         UdpClient socket = result.AsyncState as UdpClient;
         IPEndPoint source = new IPEndPoint(0, 0);
@@ -88,15 +92,54 @@ public class Network : Node
         switch (msgs[0])
         {
             case "challengeResponse":
+                // schedule the next receive operation once reading is done
+                socket.BeginReceive(new AsyncCallback(OFClientReceivePacket), socket);
                 NetworkID = Convert.ToInt32(msgs[1]);
                 OFClientConnectAttempt();
-                // schedule the next receive operation once reading is done
-                socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
             break;
             default:
                 // for now retry, later we look at error codes
                 OFClientConnectChallenge();
             break;
+        }
+    }
+
+    //public void ReceivePacket(int packetNum, int clientID, int otherClientID, Vector3 trans)
+    private void OFClientReceivePacket(IAsyncResult result)
+    {
+        UdpClient socket = result.AsyncState as UdpClient;
+        IPEndPoint source = new IPEndPoint(0, 0);
+        // get the actual message and fill out the source
+        byte[] bytes = socket.EndReceive(result, ref source);
+        string stringbytes = Encoding.ASCII.GetString(bytes);
+
+        Console.WriteLine("Got '" + stringbytes + " from " + source);
+
+        string[] msgs = stringbytes.Split("\n");
+
+        for (int i = 0; i < msgs.Length; i++)
+        {
+            string type = msgs[i];
+            i++;
+            string data = msgs[i];
+            switch (type)
+            {
+                // if client receives packet, check packet number in response, get rid of commands in history from this, stop resending
+                case "packetNum":
+                    int pn = Convert.ToInt32(data);
+                    if (pn < _acknowledgedPacketNumber)
+                    {
+                        // data is old, stop inspecting packet
+                        return;
+                    }
+                    else
+                    {
+                        _acknowledgedPacketNumber = pn;
+                        // remove old packet data from queue
+                        throw new NotImplementedException();
+                    }
+                break;
+            }
         }
     }
 
@@ -124,24 +167,6 @@ public class Network : Node
         }
 
         return packet;
-    }
-
-    public void ReceivePacket(int packetNum, int clientID, int otherClientID, Vector3 trans)
-    {
-        // check packet type
-
-
-        // if client receives packet, check packet number in response, get rid of commands in history from this, stop resending
-        if (packetNum > _acknowledgedPacketNumber)
-        {
-            _acknowledgedPacketNumber = packetNum;
-            playerTranslationsSent.RemoveAll(e => e.Item1 <= _acknowledgedPacketNumber);
-        }
-        // move other client
-        if (otherClientID != 0)
-        {
-            MovePlayer(otherClientID, trans);
-        }
     }
 
 // sending packets
