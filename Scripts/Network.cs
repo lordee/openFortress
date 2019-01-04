@@ -9,7 +9,17 @@ public class Network : Node
 {
     // network
     public bool Active = false;
-    public int NetworkID;
+    private int _networkID;
+    public int NetworkID {
+        get { return _networkID; }
+        set 
+        { 
+            _networkIDBytes = Encoding.ASCII.GetBytes(value.ToString()); 
+            _networkID = value;
+        }
+
+    }
+    private Byte[] _networkIDBytes;
 
     // client
     int sendPacketNum = 0;
@@ -23,7 +33,7 @@ public class Network : Node
     List<int> ConnectedClients = new List<int>();
 
     UdpClient udp = null;
-    List<IPEndPoint> connections = new List<IPEndPoint>();
+    List<Tuple<int, IPEndPoint>> connections = new List<Tuple<int, IPEndPoint>>();
 
     public override void _Ready()
     {
@@ -35,14 +45,14 @@ public class Network : Node
         if (Active)
         {
             UdpClient c = new UdpClient();
-            foreach(IPEndPoint ep in connections)
+            foreach(Tuple<int, IPEndPoint> t in connections)
             {
-                byte[] packet = BuildPacket();
+                byte[] packet = BuildPacket(t.Item1);
                 // check packet is different to last packet
                 throw new NotImplementedException();
                 if (packet != lastpacket)
                 {
-                    c.Send(packet, packet.Length, ep);
+                    c.Send(packet, packet.Length, t.Item2);
                 }
             }
         }
@@ -55,7 +65,6 @@ public class Network : Node
         connections.Clear();
         udp = new UdpClient();
         IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
-        connections.Add(ep);
         udp.Connect(ep);
         this.OFClientConnectChallenge();
     }
@@ -70,6 +79,7 @@ public class Network : Node
     {
         udp.BeginReceive(new AsyncCallback(OFClientReceivePacket), udp);
         byte[] cb = Encoding.ASCII.GetBytes("connect\n" + NetworkID.ToString());
+
         // add conn string info
         udp.Send(cb, cb.Length);
     }
@@ -91,6 +101,8 @@ public class Network : Node
         {
             case "challengeResponse":
                 NetworkID = Convert.ToInt32(msgs[1]);
+                Tuple<int, IPEndPoint> t = new Tuple<int, IPEndPoint>(NetworkID, source);
+                connections.Add(t);
                 OFClientConnectAttempt();
             break;
             default:
@@ -117,6 +129,8 @@ public class Network : Node
             string type = msgs[i];
             i++;
             string data = msgs[i];
+
+            Player p = null;
             switch (type)
             {
                 // if client receives packet, check packet number in response, get rid of commands in history from this, stop resending
@@ -134,22 +148,31 @@ public class Network : Node
                         throw new NotImplementedException();
                     }
                 break;
+                case "networkID":
+                    p = (Player)GetNode("/root/OpenFortress/Main/" + NetworkID.ToString());
+                    if (p == null)
+                    {
+                        // create and add player to scene
+                    }
+                break;
             }
         }
         socket.BeginReceive(new AsyncCallback(OFClientReceivePacket), socket);
     }
 
-    private byte[] BuildPacket()
+    private byte[] BuildPacket(int clientID)
     {
         byte[] packet = null;
 
         // build packet
+         
+        // networkid
+        // packetnumber
+        // acknowledged packetnumber
+        // cl_state
 
-        // if client then build only for self
-
-        // if server then build for every client
-
-
+        // if server then don't send commands, just state
+        // cl_command
     }
 
     private object[] GetPacket(int clientID, int otherClientID)

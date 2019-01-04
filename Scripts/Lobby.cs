@@ -37,7 +37,6 @@ public class Lobby : Control
         of.AddChild(inst);
 	
         _network = (Network)GetNode("/root/OpenFortress/Network");
-        _network.NetworkID = GetTree().GetNetworkUniqueId();
         _network.Active = true;
         this.Hide();
     }
