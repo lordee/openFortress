@@ -24,16 +24,15 @@ public class Network : Node
     // client
     int sendPacketNum = 0;
     int _acknowledgedPacketNumber = 0;
-    List<Vector3> playerTranslations = new List<Vector3>();
-    List<Tuple<int, Vector3>> playerTranslationsSent = new List<Tuple<int, Vector3>>();
-    Vector3 lastTranslation = new Vector3();
 
     // server
-    List<SnapShot> ClientSnapShots = new List<SnapShot>();
-    List<int> ConnectedClients = new List<int>();
+    List<SnapShot> SnapShots = new List<SnapShot>();
 
+
+    // new networking
     UdpClient udp = null;
     List<Tuple<int, IPEndPoint>> connections = new List<Tuple<int, IPEndPoint>>();
+    List<ClientCommands> unsentCommands = new List<ClientCommands>();
 
     public override void _Ready()
     {
@@ -218,12 +217,10 @@ public class Network : Node
         }
     }
 
-// receiving packets
-    private void MovePlayer(int clientID, Vector3 trans)
+    // clients call this when they want to send a command to the server
+    public void AddCommand(ClientCommands c)
     {
-        Player p = (Player)GetNode("/root/OpenFortress/Main/" + clientID.ToString());
-        p.Translation = trans;
-        GD.Print (p.Translation);
+        unsentCommands.Add(c);
     }
 }
 
@@ -231,13 +228,28 @@ public class SnapShot
 {
     public int PacketNumber;
     public int ClientID;
-    public Vector3 Translation;
-    public SnapShot(int packetNum, int clientID, Vector3 trans)
+    public Transform Transform;
+    public SnapShot(int packetNum, int clientID, Transform trans)
     {
         this.PacketNumber = packetNum;
         this.ClientID = clientID;
-        this.Translation = trans;
+        this.Transform = trans;
     }
+}
+
+public enum ClientCommands
+{
+    connect
+    , disconnect
+    , primeOne
+    , primeTwo
+    , throwGren
+    , attack
+    , jump
+    , moveForward
+    , moveLeft
+    , moveRight
+    , moveBack
 }
 // packet
     // player join, quit etc commands
