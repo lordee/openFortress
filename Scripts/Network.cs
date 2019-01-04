@@ -23,7 +23,7 @@ public class Network : Node
     List<int> ConnectedClients = new List<int>();
 
     UdpClient udp = null;
-
+    List<IPEndPoint> connections = new List<IPEndPoint>();
 
     public override void _Ready()
     {
@@ -34,20 +34,16 @@ public class Network : Node
     {
         if (Active)
         {
-            // if client, build packet for one client only
-
-            // if server, build packet of all changed ents and communicate to all players
-            
-            
-            // check if there is new data
-            object[] packet = null;
-
-            packet = GetPacket(this.NetworkID, 0);
-
-            // send to server
-            if (packet != null)
+            UdpClient c = new UdpClient();
+            foreach(IPEndPoint ep in connections)
             {
-                RpcUnreliableId(1, "ReceivePacket", packet);
+                byte[] packet = BuildPacket();
+                // check packet is different to last packet
+                throw new NotImplementedException();
+                if (packet != lastpacket)
+                {
+                    c.Send(packet, packet.Length, ep);
+                }
             }
         }
     }
@@ -56,8 +52,10 @@ public class Network : Node
     public void OFClientConnect(string ip, int port)
     {
         // send packet with connect request
+        connections.Clear();
         udp = new UdpClient();
         IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
+        connections.Add(ep);
         udp.Connect(ep);
         this.OFClientConnectChallenge();
     }
@@ -70,7 +68,7 @@ public class Network : Node
     }
     public void OFClientConnectAttempt()
     {
-        udp.BeginReceive(new AsyncCallback(OFClientReceiveConnectAck), udp);
+        udp.BeginReceive(new AsyncCallback(OFClientReceivePacket), udp);
         byte[] cb = Encoding.ASCII.GetBytes("connect\n" + NetworkID.ToString());
         // add conn string info
         udp.Send(cb, cb.Length);
@@ -92,8 +90,6 @@ public class Network : Node
         switch (msgs[0])
         {
             case "challengeResponse":
-                // schedule the next receive operation once reading is done
-                socket.BeginReceive(new AsyncCallback(OFClientReceivePacket), socket);
                 NetworkID = Convert.ToInt32(msgs[1]);
                 OFClientConnectAttempt();
             break;
@@ -104,7 +100,6 @@ public class Network : Node
         }
     }
 
-    //public void ReceivePacket(int packetNum, int clientID, int otherClientID, Vector3 trans)
     private void OFClientReceivePacket(IAsyncResult result)
     {
         UdpClient socket = result.AsyncState as UdpClient;
@@ -141,6 +136,20 @@ public class Network : Node
                 break;
             }
         }
+        socket.BeginReceive(new AsyncCallback(OFClientReceivePacket), socket);
+    }
+
+    private byte[] BuildPacket()
+    {
+        byte[] packet = null;
+
+        // build packet
+
+        // if client then build only for self
+
+        // if server then build for every client
+
+
     }
 
     private object[] GetPacket(int clientID, int otherClientID)
