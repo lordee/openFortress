@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Linq;
 
 public class Network : Node
 {
     // network
+    public ConnectionType ConnType;
     public bool Active = false;
     private int _networkID;
     public int NetworkID {
@@ -28,11 +30,12 @@ public class Network : Node
     // server
     List<SnapShot> SnapShots = new List<SnapShot>();
 
-
     // new networking
-    UdpClient udp = null;
+    UdpClient udp = new UdpClient();
+    List<Tuple<int, IPEndPoint>> challenges = new List<Tuple<int, IPEndPoint>>();
     List<Tuple<int, IPEndPoint>> connections = new List<Tuple<int, IPEndPoint>>();
     List<ClientCommands> unsentCommands = new List<ClientCommands>();
+    List<ClientCommands> sentCommands = new List<ClientCommands>();
 
     public override void _Ready()
     {
@@ -43,7 +46,6 @@ public class Network : Node
     {
         if (Active)
         {
-            UdpClient c = new UdpClient();
             foreach(Tuple<int, IPEndPoint> t in connections)
             {
                 byte[] packet = BuildPacket(t.Item1);
@@ -51,10 +53,24 @@ public class Network : Node
                 throw new NotImplementedException();
                 if (packet != lastpacket)
                 {
-                    c.Send(packet, packet.Length, t.Item2);
+                    udp.SendAsync(packet, packet.Length, t.Item2);
                 }
+
+                // timeout on connections needed
+                throw new NotImplementedException();
+
+                // timeout on challenges needed
+                throw new NotImplementedException();
             }
         }
+    }
+
+    // server hosts
+    public void OFServerHost()
+    {
+        this.ConnType = ConnectionType.Server;
+        NetworkID = 0;
+        udp.BeginReceive(new AsyncCallback(ReceivePacket), udp);
     }
 
     // client asks to connect to server
@@ -62,61 +78,26 @@ public class Network : Node
     {
         // send packet with connect request
         connections.Clear();
-        udp = new UdpClient();
         IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
+        ConnType = ConnectionType.Client;
         udp.Connect(ep);
         this.OFClientConnectChallenge();
     }
 
     public void OFClientConnectChallenge()
     {
-        udp.BeginReceive(new AsyncCallback(OFClientReceiveConnectAck), udp);
+        udp.BeginReceive(new AsyncCallback(ReceivePacket), udp);
         byte[] cb = Encoding.ASCII.GetBytes("getChallenge");
-        udp.Send(cb, cb.Length);
-    }
-    public void OFClientConnectAttempt()
-    {
-        udp.BeginReceive(new AsyncCallback(OFClientReceivePacket), udp);
-        byte[] cb = Encoding.ASCII.GetBytes("connect\n" + NetworkID.ToString());
-
-        // add conn string info
-        udp.Send(cb, cb.Length);
+        udp.SendAsync(cb, cb.Length);
     }
 
-    private void OFClientReceiveConnectAck(IAsyncResult result)
-    {
-        UdpClient socket = result.AsyncState as UdpClient;
-        IPEndPoint source = new IPEndPoint(0, 0);
-        // get the actual message and fill out the source
-        byte[] message = socket.EndReceive(result, ref source);
-        string msg = Encoding.ASCII.GetString(message);
-
-        Console.WriteLine("Got '" + msg + " from " + source);
-
-        string[] msgs = msg.Split("\n");
- 
-        // if connected, get connection id
-        switch (msgs[0])
-        {
-            case "challengeResponse":
-                NetworkID = Convert.ToInt32(msgs[1]);
-                Tuple<int, IPEndPoint> t = new Tuple<int, IPEndPoint>(NetworkID, source);
-                connections.Add(t);
-                OFClientConnectAttempt();
-            break;
-            default:
-                // for now retry, later we look at error codes
-                OFClientConnectChallenge();
-            break;
-        }
-    }
-
-    private void OFClientReceivePacket(IAsyncResult result)
+    private void ReceivePacket(IAsyncResult result)
     {
         UdpClient socket = result.AsyncState as UdpClient;
         IPEndPoint source = new IPEndPoint(0, 0);
         // get the actual message and fill out the source
         byte[] bytes = socket.EndReceive(result, ref source);
+        socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
         string stringbytes = Encoding.ASCII.GetString(bytes);
 
         Console.WriteLine("Got '" + stringbytes + " from " + source);
@@ -132,6 +113,52 @@ public class Network : Node
             Player p = null;
             switch (type)
             {
+                // connection items
+                case "getChallenge":
+                    // client is challenging server, send response of networkid
+                    if (this.ConnType == ConnectionType.Server)
+                    {
+                        sendChallengeResponse(socket, source);
+                    }
+                break;
+                // received challenge response from server, try to connect
+                case "challengeResponse":
+                    if (this.ConnType == ConnectionType.Client)
+                    {
+                        NetworkID = Convert.ToInt32(msgs[1]);
+                        Tuple<int, IPEndPoint> t = new Tuple<int, IPEndPoint>(NetworkID, source);
+                        connections.Add(t);
+                        byte[] packet = Encoding.ASCII.GetBytes("connect\n" + NetworkID.ToString());
+                        socket.SendAsync(packet, packet.Length);
+                    }
+                break;
+                // received connect request from client
+                case "connect":
+                    if (this.ConnType == ConnectionType.Server)
+                    {
+                        int clientID = Convert.ToInt32(data);
+                        // if it exists in challenge list, add to connect list
+                        if (challenges.Any(e => e.Item1 == clientID && e.Item2 == source))
+                        {
+                            if (!connections.Any(e => e.Item1 == clientID && e.Item2 == source))
+                            {
+                                connections.Add(challenges.First(e => e.Item1 == clientID && e.Item2 == source));
+                                // send them the state of the game so they're synced
+                                throw new NotImplementedException();
+                            }
+                            
+                            challenges.RemoveAll(e => e.Item1 == clientID);
+                        }
+                        else
+                        {
+                            // challenge no longer exists, send new challengeResponse
+                            sendChallengeResponse(socket, source);
+                        }
+                    }
+                break;
+
+                // need to build ack pn in to connections data, need to track against all clients
+                throw new NotImplementedException();
                 // if client receives packet, check packet number in response, get rid of commands in history from this, stop resending
                 case "packetNum":
                     int pn = Convert.ToInt32(data);
@@ -156,7 +183,18 @@ public class Network : Node
                 break;
             }
         }
-        socket.BeginReceive(new AsyncCallback(OFClientReceivePacket), socket);
+    }
+
+    private void sendChallengeResponse(UdpClient socket, IPEndPoint source)
+    {
+        int chal = challenges.Count > 0 ? challenges.Max(e => e.Item1) : 0;
+        int conn = connections.Count > 0 ? connections.Max(e => e.Item1) : 0;
+        int nextID = chal > conn ? (chal + 1) : (conn + 1);
+        
+        challenges.Add(new Tuple<int, IPEndPoint>(nextID, source));
+        byte[] packet = Encoding.ASCII.GetBytes("challengeResponse\n" + nextID.ToString());
+        socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
+        socket.SendAsync(packet, packet.Length, source);
     }
 
     private byte[] BuildPacket(int clientID)
@@ -167,56 +205,33 @@ public class Network : Node
          
         // networkid
         // packetnumber
+        
         // acknowledged packetnumber
         // cl_state
+        // transform, speed
 
         // if server then don't send commands, just state
-        // cl_command
-    }
 
-    private object[] GetPacket(int clientID, int otherClientID)
-    {
-        object[] packet = null;
-        int packetNum = 0;
-        Vector3 trans = new Vector3();
-        // if there is a command not yet sent or acknowledged, add to packet
-        sendPacketNum++;
-        packetNum = sendPacketNum;
-        
-        if (playerTranslationsSent.Count > 0) // unacknowledged sent translations
+        if (this.ConnType == ConnectionType.Client)
         {
-            trans = playerTranslationsSent[0].Item2;
-            packet = new object[] { packetNum, clientID, otherClientID, trans };
-        }
-        else if (playerTranslations.Count > 0)
-        {               
-            trans = playerTranslations[0];
+            // cl_command
+            if (sentCommands.Count > 0)
+            {
+                // add to packet
+            }
+            else if (unsentCommands.Count > 0)
+            {
+                // add to packet
 
-            playerTranslationsSent.Add(new Tuple<int, Vector3>(sendPacketNum, trans));
-            playerTranslations.RemoveAt(0);
-            packet = new object[] { packetNum, clientID, otherClientID, trans };
-        }
 
+                sentCommands.Add(unsentCommands[0]);
+                unsentCommands.RemoveAt(0);
+            }
+        }
         return packet;
     }
 
 // sending packets
-    public void SpawnPlayer(Player p)
-    {
-        // add spawn player to gamestate
-        Vector3 pt = p.Translation;
-        playerTranslations.Add(pt);
-    }
-
-    public void UpdateTranslation(Vector3 trans)
-    {
-        if (!playerTranslations.Contains(trans) && trans != lastTranslation)
-        {
-            playerTranslations.Add(trans);
-            lastTranslation = trans;
-        }
-    }
-
     // clients call this when they want to send a command to the server
     public void AddCommand(ClientCommands c)
     {
@@ -235,6 +250,12 @@ public class SnapShot
         this.ClientID = clientID;
         this.Transform = trans;
     }
+}
+
+public enum ConnectionType
+{
+    Client
+    , Server
 }
 
 public enum ClientCommands
