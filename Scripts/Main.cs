@@ -13,7 +13,7 @@ public class Main : Node
     {
         _network = (Network)GetNode("/root/OpenFortress/Network");
 
-        Player player = AddPlayer(true, _network.NetworkID);
+        Player player = AddPlayer(_network.NetworkID);
 
         PackedScene m = (PackedScene)ResourceLoader.Load("res://Scenes/TeamMenu.tscn");
         TeamMenu m2 = (TeamMenu)m.Instance();
@@ -33,18 +33,13 @@ public class Main : Node
         }
     }
 
-    public Player AddPlayer(bool propagate, int networkID)
+    public Player AddPlayer(int networkID)
     {
         PackedScene playerScene = (PackedScene)ResourceLoader.Load("res://Scenes/Player.tscn");
         Player player = (Player)playerScene.Instance();
         this.AddChild(player);
         player.SetName(networkID.ToString());
         
-        if (propagate)
-        {
-            _network.SpawnPlayer(player);
-        }
-
         return player;
     }
 

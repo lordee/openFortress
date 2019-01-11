@@ -483,9 +483,9 @@ public class Player : KinematicBody
             }
             
             playerVelocity = this.MoveAndSlide(playerVelocity, up);
-            _network.UpdateTranslation(this.Translation);
             touchingGround = IsOnFloor();     
             float speed = playerVelocity.Length();
+            _network.UpdateMovement(this.Transform, speed);
             //GD.Print("Speed: " + speed.ToString());
         }
     }
