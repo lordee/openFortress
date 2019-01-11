@@ -23,13 +23,6 @@ public class Network : Node
     }
     private Byte[] _networkIDBytes;
 
-    // client
-    int sendPacketNum = 0;
-    int _acknowledgedPacketNumber = 0;
-
-    // server
-    List<SnapShot> SnapShots = new List<SnapShot>();
-
     // new networking
     UdpClient udp = new UdpClient();
     List<Tuple<int, IPEndPoint>> challenges = new List<Tuple<int, IPEndPoint>>();
@@ -51,13 +44,18 @@ public class Network : Node
         {
             foreach(OFConnection c in connections)
             {
-                byte[] packet = BuildPacket(c.NetworkID);
-                // check packet is different to last packet
-                throw new NotImplementedException();
-                if (packet != lastpacket)
+                foreach(OFConnection send in connections)
                 {
-                    udp.SendAsync(packet, packet.Length, c.IPAddress);
+                    if (c != send)
+                    {
+                        SnapShot ss = BuildSnapShot(send);
+                        byte[] packet = BuildPacket(c.NetworkID);
+
+                        udp.SendAsync(packet, packet.Length, c.IPAddress);
+                    }
                 }
+                
+                
 
                 // timeout on connections needed
                 throw new NotImplementedException();
@@ -76,6 +74,18 @@ public class Network : Node
         udp.BeginReceive(new AsyncCallback(ReceivePacket), udp);
     }
 
+    private void sendChallengeResponse(UdpClient socket, IPEndPoint source)
+    {
+        int chal = challenges.Count > 0 ? challenges.Max(e => e.Item1) : 1;
+        int conn = connections.Count > 0 ? connections.Max(e => e.NetworkID) : 1;
+        int nextID = chal > conn ? (chal + 1) : (conn + 1);
+        
+        challenges.Add(new Tuple<int, IPEndPoint>(nextID, source));
+        byte[] packet = Encoding.ASCII.GetBytes("challengeResponse\n" + nextID.ToString());
+        socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
+        socket.SendAsync(packet, packet.Length, source);
+    }
+
     // client asks to connect to server
     public void OFClientConnect(string ip, int port)
     {
@@ -92,7 +102,7 @@ public class Network : Node
         udp.BeginReceive(new AsyncCallback(ReceivePacket), udp);
         byte[] cb = Encoding.ASCII.GetBytes("getChallenge");
         udp.SendAsync(cb, cb.Length);
-    }
+    }   
 
     private void ReceivePacket(IAsyncResult result)
     {
@@ -163,44 +173,62 @@ public class Network : Node
                         }
                     }
                 break;
-                // need to build ack pn in to connections data, need to track against all clients
-                throw new NotImplementedException();
-                // if client receives packet, check packet number in response, get rid of commands in history from this, stop resending
-                case "packetNum":
-                    int pn = Convert.ToInt32(data);
-                    if (pn < _acknowledgedPacketNumber)
-                    {
-                        // data is old, stop inspecting packet
-                        return;
-                    }
-                    else
-                    {
-                        _acknowledgedPacketNumber = pn;
-                        // remove old packet data from queue
-                        throw new NotImplementedException();
-                    }
-                break;
                 case "networkID":
-                    p = (Player)GetNode("/root/OpenFortress/Main/" + NetworkID.ToString());
-                    if (p == null)
+                    int id = Convert.ToInt32(data);
+                    if (connections.Any(c => c.NetworkID == id))
                     {
-                        // create and add player to scene
+                        OFConnection peer = connections.First(c => c.NetworkID == id);
+                        SnapShot ss = DecodePacket(msgs);
+                        if (ss.PacketNumber <= peer.AcknowledgedPacketNumber)
+                        {
+                            // data is old, stop inspecting packet
+                            return;
+                        }
+                        else
+                        {
+                            peer.AcknowledgedPacketNumber = ss.PacketNumber;
+                            // apply state and cmds etc
+                            throw new NotImplementedException();
+                        }
                     }
+                    return;
                 break;
             }
         }
     }
 
-    private void sendChallengeResponse(UdpClient socket, IPEndPoint source)
+    private SnapShot DecodePacket(string[] msgs)
     {
-        int chal = challenges.Count > 0 ? challenges.Max(e => e.Item1) : 1;
-        int conn = connections.Count > 0 ? connections.Max(e => e.NetworkID) : 1;
-        int nextID = chal > conn ? (chal + 1) : (conn + 1);
+        for (int i = 0; i < msgs.Length; i++)
+        {
+            string type = msgs[i];
+            i++;
+            string data = msgs[i];
+            SnapShot ss = new SnapShot();
+            switch (type)
+            {
+                case "packetNumber":
+                    ss.PacketNumber = Convert.ToInt32(data);
+                break;
+                case "clientID":
+                    ss.ClientID = Convert.ToInt32(data);
+                break;
+                case "transform":
+
+                break;
+                case "velocity":
+
+                break;
+                case "commands":
+
+                break;
+            }
+        }
+    }
+
+    private SnapShot BuildSnapShot(OFConnection client)
+    {
         
-        challenges.Add(new Tuple<int, IPEndPoint>(nextID, source));
-        byte[] packet = Encoding.ASCII.GetBytes("challengeResponse\n" + nextID.ToString());
-        socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
-        socket.SendAsync(packet, packet.Length, source);
     }
 
     private byte[] BuildPacket(int clientID)
@@ -266,7 +294,9 @@ public class OFConnection
 {
     public int NetworkID;
     public IPEndPoint IPAddress;
+    public int AcknowledgedPacketNumber;
     public List<SnapShot> Snapshots = new List<SnapShot>();
+
 
     public OFConnection(int networkID, IPEndPoint IP)
     {
@@ -274,17 +304,13 @@ public class OFConnection
         this.IPAddress = IP;
     }
 }
-public class SnapShot
+public struct SnapShot
 {
     public int PacketNumber;
     public int ClientID;
     public Transform Transform;
-    public SnapShot(int packetNum, int clientID, Transform trans)
-    {
-        this.PacketNumber = packetNum;
-        this.ClientID = clientID;
-        this.Transform = trans;
-    }
+    public float Velocity;
+    public List<ClientCommands> Commands;
 }
 
 public enum ConnectionType
