@@ -415,6 +415,7 @@ public class Player : KinematicBody
                     _currentGren2 -= 1;
                 }
             }
+            else if ()
         }
     }
 
@@ -462,6 +463,7 @@ public class Player : KinematicBody
             if (Input.IsActionPressed("attack"))
             {
                 this.Shoot();
+                _playerController.attack = 0;
             }          
 
             if (ActiveWeapon != null)
