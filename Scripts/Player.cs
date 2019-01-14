@@ -22,6 +22,8 @@ class DiseasedData
 }
 public class Player : KinematicBody
 {
+
+    PlayerController _playerController = new PlayerController();
     float mouseSensitivity = 0.2f;
     float cameraAngle = 0F;
 
@@ -120,9 +122,7 @@ public class Player : KinematicBody
     private Vector3 moveDirectionNorm = new Vector3();
     private Vector3 playerVelocity = new Vector3();
     
-    
-    private Cmd _cmd;
-
+   
     // Nodes
     Spatial head;
     Camera camera;
@@ -321,8 +321,6 @@ public class Player : KinematicBody
     private bool wishJump = false;
     private bool touchingGround = false;
 
-    
-
     public override void _Ready()
     {
         // Called every time the node is added to the scene.
@@ -369,7 +367,7 @@ public class Player : KinematicBody
             // is this best way to check actions?
             if (Input.IsActionJustPressed("slot1")) 
             {
-                ActiveWeapon = this.Class.Weapon1;
+                _playerController.slot1 = 1;
             } 
             else if (Input.IsActionJustPressed("slot2"))
             {
@@ -450,6 +448,14 @@ public class Player : KinematicBody
                 Vector2 motion = targ * 50 * delta;
 
                 Crosshair.Position -= motion;
+            }
+
+
+            // process inputs
+            if (_playerController.slot1 == 1)
+            {
+                ActiveWeapon = this.Class.Weapon1;
+                _playerController.slot1 = 0;
             }
 
             // shooting

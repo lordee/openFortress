@@ -2,32 +2,19 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class PlayerController
+public struct PlayerController
 {
-    public int NetworkID;
     // Player commands, stores wish commands that the player asks for (Forward, back, jump, etc)
-    public Cmd PlayerCommands;
-    private Player _player;
-
-    Network _network;
-    public PlayerController()
-    {
-
-    }
-
-    public void InitPlayer(int networkID)
-    {
-        NetworkID = networkID;
-        _network = (Network)GetNode("/root/OpenFortress/Network");
-        // add player node
-
-
-    }
-}
-
-public struct Cmd 
-{
     public float move_forward;
     public float move_right;
     public float move_up;
+    public float slot1;
+    public float slot2;
+    public float slot3;
+    public float slot4;
+    public float detpipe;
+    public float gren1;
+    public float gren2;
+    public float attack;
+
 }
