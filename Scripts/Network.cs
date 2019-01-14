@@ -27,11 +27,6 @@ public class Network : Node
     UdpClient udp = new UdpClient();
     List<Tuple<int, IPEndPoint>> challenges = new List<Tuple<int, IPEndPoint>>();
     List<OFConnection> connections = new List<OFConnection>();
-    List<ClientCommands> unsentCommands = new List<ClientCommands>();
-    List<ClientCommands> sentCommands = new List<ClientCommands>();
-
-    List<Tuple<Transform,float>> unsentMovement = new List<Tuple<Transform, float>>();
-    List<Tuple<Transform,float>> sentMovement = new List<Tuple<Transform, float>>();
 
     public override void _Ready()
     {
@@ -113,7 +108,7 @@ public class Network : Node
         socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
         string stringbytes = Encoding.ASCII.GetString(bytes);
 
-        Console.WriteLine("Got '" + stringbytes + " from " + source);
+        //Console.WriteLine("Got '" + stringbytes + " from " + source);
 
         string[] msgs = stringbytes.Split("\n");
 
@@ -189,6 +184,8 @@ public class Network : Node
                             peer.AcknowledgedPacketNumber = ss.PacketNumber;
                             // apply state and cmds etc
                             throw new NotImplementedException();
+
+                            // if server, add cmds to player controller so that they get readded for transmission?
                         }
                     }
                     return;
@@ -244,49 +241,7 @@ public class Network : Node
         // cl_state
         // transform, speed
 
-        // if server then don't send commands, just state
-        if (sentMovement.Count > 0)
-        {
-            // add to packet
-        }
-        else if (unsentMovement.Count > 0)
-        {
-            // add to packet
-
-            
-            sentMovement.Add(unsentMovement[0]);
-            unsentMovement.RemoveAt(0);
-        }
-
-        if (this.ConnType == ConnectionType.Client)
-        {
-            // cl_command
-            if (sentCommands.Count > 0)
-            {
-                // add to packet
-            }
-            else if (unsentCommands.Count > 0)
-            {
-                // add to packet
-
-
-                sentCommands.Add(unsentCommands[0]);
-                unsentCommands.RemoveAt(0);
-            }
-        }
         return packet;
-    }
-
-// sending packets
-    // clients call this when they want to send a command to the server
-    public void AddCommand(ClientCommands c)
-    {
-        unsentCommands.Add(c);
-    }
-
-    public void UpdateMovement(Transform t, float velocity)
-    {
-        unsentMovement.Add(new Tuple<Transform, float>(t, velocity));
     }
 }
 
@@ -296,6 +251,11 @@ public class OFConnection
     public IPEndPoint IPAddress;
     public int AcknowledgedPacketNumber;
     public List<SnapShot> Snapshots = new List<SnapShot>();
+    
+    List<ClientCommands> unsentCommands = new List<ClientCommands>();
+    List<ClientCommands> sentCommands = new List<ClientCommands>();
+    List<Tuple<Transform,float>> unsentMovement = new List<Tuple<Transform, float>>();
+    List<Tuple<Transform,float>> sentMovement = new List<Tuple<Transform, float>>();
 
 
     public OFConnection(int networkID, IPEndPoint IP)

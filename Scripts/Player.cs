@@ -2,13 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-struct Cmd 
-{
-    public float move_forward;
-    public float move_right;
-    public float move_up;
-}
-
 class DiseasedData
 {
     public Player Attacker;
@@ -27,7 +20,6 @@ class DiseasedData
         }
     }
 }
-
 public class Player : KinematicBody
 {
     float mouseSensitivity = 0.2f;
@@ -128,7 +120,7 @@ public class Player : KinematicBody
     private Vector3 moveDirectionNorm = new Vector3();
     private Vector3 playerVelocity = new Vector3();
     
-    // Player commands, stores wish commands that the player asks for (Forward, back, jump, etc)
+    
     private Cmd _cmd;
 
     // Nodes
@@ -329,7 +321,7 @@ public class Player : KinematicBody
     private bool wishJump = false;
     private bool touchingGround = false;
 
-    Network _network;
+    
 
     public override void _Ready()
     {
@@ -350,7 +342,6 @@ public class Player : KinematicBody
             l.Connect("body_entered", this, "_on_Ladder_body_entered");
             l.Connect("body_exited", this, "_on_Ladder_body_exited");
         }
-        _network = (Network)GetNode("/root/OpenFortress/Network");
     }
 
     public override void _Input(InputEvent e)
@@ -485,7 +476,6 @@ public class Player : KinematicBody
             playerVelocity = this.MoveAndSlide(playerVelocity, up);
             touchingGround = IsOnFloor();     
             float speed = playerVelocity.Length();
-            _network.UpdateMovement(this.Transform, speed);
             //GD.Print("Speed: " + speed.ToString());
         }
     }
