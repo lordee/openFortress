@@ -8,13 +8,17 @@ public struct PlayerController
     public float move_forward;
     public float move_right;
     public float move_up;
-    public float slot1;
-    public float slot2;
-    public float slot3;
-    public float slot4;
-    public float detpipe;
-    public float gren1;
-    public float gren2;
-    public float attack;
+    public List<Impulse> Impulses;
+}
 
+public enum Impulse
+{
+    Slot1
+    , Slot2
+    , Slot3
+    , Slot4
+    , Detpipe
+    , Gren1
+    , Gren2
+    , Attack
 }

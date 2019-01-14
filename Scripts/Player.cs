@@ -22,7 +22,6 @@ class DiseasedData
 }
 public class Player : KinematicBody
 {
-
     PlayerController _playerController = new PlayerController();
     float mouseSensitivity = 0.2f;
     float cameraAngle = 0F;
@@ -332,6 +331,7 @@ public class Player : KinematicBody
         ArmourLabel = (Label)GetNode("/root/OpenFortress/Main/UI/ArmourLabel");
         cameraCenter.x = OS.GetWindowSize().x / 2;
         cameraCenter.y = OS.GetWindowSize().y / 2;
+        _playerController.Impulses = new List<Impulse>();
 
         // enable ladders
         var ladders = GetTree().GetNodesInGroup("Ladders");
@@ -367,55 +367,40 @@ public class Player : KinematicBody
             // is this best way to check actions?
             if (Input.IsActionJustPressed("slot1")) 
             {
-                _playerController.slot1 = 1;
+                _playerController.Impulses.Add(Impulse.Slot1);
             } 
             else if (Input.IsActionJustPressed("slot2"))
             {
+                _playerController.Impulses.Add(Impulse.Slot2);
                 ActiveWeapon = this.Class.Weapon2;
             }
             else if (Input.IsActionJustPressed("slot3"))
             {
+                _playerController.Impulses.Add(Impulse.Slot3);
                 ActiveWeapon = this.Class.Weapon3;
             }
             else if (Input.IsActionJustPressed("slot4"))
             {
+                _playerController.Impulses.Add(Impulse.Slot4);
                 ActiveWeapon = this.Class.Weapon4;
             }
             else if (Input.IsActionJustPressed("detpipe"))
             {
+                _playerController.Impulses.Add(Impulse.Detpipe);
                 this.Detpipe();
             }
             else if (Input.IsActionJustPressed("gren1"))
             {
-                if (this.Class.HandGrenadeManager.PrimedGrenade1 != null)
-                {
-                    // throw it
-                    this.Class.HandGrenadeManager.ThrowGren(camera.GetGlobalTransform(), this, this.Class.Gren1, 1);
-                }
-                else if (this._currentGren1 > 0)
-                {
-                    // prime new gren1
-                    this.Class.HandGrenadeManager.PrimeGren(this, this.Class.Gren1, 1);
-                   
-                    _currentGren1 -= 1;
-                }
+                _playerController.Impulses.Add(Impulse.Gren1);
             }
             else if (Input.IsActionJustPressed("gren2"))
             {
-                if (this.Class.HandGrenadeManager.PrimedGrenade2 != null)
-                {
-                    // throw it
-                    this.Class.HandGrenadeManager.ThrowGren(camera.GetGlobalTransform(), this, this.Class.Gren2, 2);
-                }
-                else if (this._currentGren2 > 0)
-                {
-                    // prime new gren2
-                    this.Class.HandGrenadeManager.PrimeGren(this, this.Class.Gren2, 2);
-                   
-                    _currentGren2 -= 1;
-                }
+                _playerController.Impulses.Add(Impulse.Gren2);
             }
-            else if ()
+            else if (Input.IsActionPressed("attack"))
+            {
+                _playerController.Impulses.Add(Impulse.Attack);
+            }
         }
     }
 
@@ -451,21 +436,61 @@ public class Player : KinematicBody
                 Crosshair.Position -= motion;
             }
 
-
-            // process inputs
-            if (_playerController.slot1 == 1)
+            // process inputs -- should this be in normal process instead of physics process?
+            foreach (Impulse imp in _playerController.Impulses)
             {
-                ActiveWeapon = this.Class.Weapon1;
-                _playerController.slot1 = 0;
+                switch (imp)
+                {
+                    case Impulse.Attack:
+                        this.Shoot();
+                    break;
+                    case Impulse.Slot1:
+                        ActiveWeapon = this.Class.Weapon1;
+                    break;
+                    case Impulse.Slot2:
+                        ActiveWeapon = this.Class.Weapon2;
+                    break;
+                    case Impulse.Slot3:
+                        ActiveWeapon = this.Class.Weapon3;
+                    break;
+                    case Impulse.Slot4:
+                        ActiveWeapon = this.Class.Weapon4;
+                    break;
+                    case Impulse.Detpipe:
+                        this.Detpipe();
+                    break;
+                    case Impulse.Gren1:
+                        if (this.Class.HandGrenadeManager.PrimedGrenade1 != null)
+                        {
+                            // throw it
+                            this.Class.HandGrenadeManager.ThrowGren(camera.GetGlobalTransform(), this, this.Class.Gren1, 1);
+                        }
+                        else if (this._currentGren1 > 0)
+                        {
+                            // prime new gren1
+                            this.Class.HandGrenadeManager.PrimeGren(this, this.Class.Gren1, 1);
+                        
+                            _currentGren1 -= 1;
+                        }
+                    break;
+                    case Impulse.Gren2:
+                        if (this.Class.HandGrenadeManager.PrimedGrenade2 != null)
+                        {
+                            // throw it
+                            this.Class.HandGrenadeManager.ThrowGren(camera.GetGlobalTransform(), this, this.Class.Gren2, 2);
+                        }
+                        else if (this._currentGren2 > 0)
+                        {
+                            // prime new gren2
+                            this.Class.HandGrenadeManager.PrimeGren(this, this.Class.Gren2, 2);
+                        
+                            _currentGren2 -= 1;
+                        }
+                    break;
+                }
             }
-
-            // shooting
-            if (Input.IsActionPressed("attack"))
-            {
-                this.Shoot();
-                _playerController.attack = 0;
-            }          
-
+            _playerController.Impulses.Clear();
+            
             if (ActiveWeapon != null)
             {
                 ActiveWeapon.PhysicsProcess(delta);
@@ -711,8 +736,8 @@ public class Player : KinematicBody
         SetMovementDir();
         float scale = CmdScale();
 
-        wishdir += aim.x * _cmd.move_right;
-        wishdir -= aim.z * _cmd.move_forward;
+        wishdir += aim.x * _playerController.move_right;
+        wishdir -= aim.z * _playerController.move_forward;
 
         float wishspeed = wishdir.Length();
         wishspeed *= _tranquilised ? moveSpeed / 2 : moveSpeed;
@@ -727,7 +752,7 @@ public class Player : KinematicBody
         else
             accel = airAcceleration;
         // If the player is ONLY strafing left or right
-        if(_cmd.move_forward == 0 && _cmd.move_right != 0)
+        if(_playerController.move_forward == 0 && _playerController.move_right != 0)
         {
             if(wishspeed > sideStrafeSpeed)
             {
@@ -764,7 +789,7 @@ public class Player : KinematicBody
         float k;
 
         // Can't control movement if not moving forward or backward
-        if(Mathf.Abs(_cmd.move_forward) < 0.001 || Mathf.Abs(wishspeed) < 0.001)
+        if(Mathf.Abs(_playerController.move_forward) < 0.001 || Mathf.Abs(wishspeed) < 0.001)
             return;
         zspeed = playerVelocity.y;
         playerVelocity.y = 0;
@@ -810,8 +835,8 @@ public class Player : KinematicBody
         SetMovementDir();
         float scale = CmdScale();
 
-        wishDir += aim.x * _cmd.move_right;
-        wishDir -= aim.z * _cmd.move_forward;
+        wishDir += aim.x * _playerController.move_right;
+        wishDir -= aim.z * _playerController.move_forward;
         wishDir = wishDir.Normalized();
         moveDirectionNorm = wishDir;
 
@@ -821,15 +846,15 @@ public class Player : KinematicBody
        
         if (climbLadder)
         {
-            if (_cmd.move_forward != 0f)
+            if (_playerController.move_forward != 0f)
             {
-                playerVelocity.y = moveSpeed * (cameraAngle / 90) * _cmd.move_forward;
+                playerVelocity.y = moveSpeed * (cameraAngle / 90) * _playerController.move_forward;
             }
             else
             {
                 playerVelocity.y = 0;
             }
-            if (_cmd.move_right == 0f)
+            if (_playerController.move_right == 0f)
             {
                 playerVelocity.x = 0;
                 playerVelocity.z = 0;
@@ -920,13 +945,13 @@ public class Player : KinematicBody
         float total;
         float scale;
 
-        max = (int)Mathf.Abs(_cmd.move_forward);
-        if(Mathf.Abs(_cmd.move_right) > max)
-            max = (int)Mathf.Abs(_cmd.move_right);
+        max = (int)Mathf.Abs(_playerController.move_forward);
+        if(Mathf.Abs(_playerController.move_right) > max)
+            max = (int)Mathf.Abs(_playerController.move_right);
         if(max <= 0)
             return 0;
 
-        total = Mathf.Sqrt(_cmd.move_forward * _cmd.move_forward + _cmd.move_right * _cmd.move_right);
+        total = Mathf.Sqrt(_playerController.move_forward * _playerController.move_forward + _playerController.move_right * _playerController.move_right);
         scale = (_tranquilised ? moveSpeed / 2 : moveSpeed) * max / (moveScale * total);
 
         return scale;
