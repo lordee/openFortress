@@ -23,6 +23,9 @@ class DiseasedData
 public class Player : KinematicBody
 {
     PlayerController _playerController = new PlayerController();
+    public PlayerController PlayerController {
+        get { return _playerController; }
+    }
     float mouseSensitivity = 0.2f;
     float cameraAngle = 0F;
 
@@ -384,22 +387,48 @@ public class Player : KinematicBody
                 _playerController.Impulses.Add(Impulse.Slot4);
                 ActiveWeapon = this.Class.Weapon4;
             }
-            else if (Input.IsActionJustPressed("detpipe"))
+            if (Input.IsActionJustPressed("detpipe"))
             {
                 _playerController.Impulses.Add(Impulse.Detpipe);
                 this.Detpipe();
             }
-            else if (Input.IsActionJustPressed("gren1"))
+            if (Input.IsActionJustPressed("gren1"))
             {
                 _playerController.Impulses.Add(Impulse.Gren1);
             }
-            else if (Input.IsActionJustPressed("gren2"))
+            if (Input.IsActionJustPressed("gren2"))
             {
                 _playerController.Impulses.Add(Impulse.Gren2);
             }
-            else if (Input.IsActionPressed("attack"))
+            if (Input.IsActionPressed("attack"))
             {
                 _playerController.Impulses.Add(Impulse.Attack);
+            }
+            if (Input.IsActionJustPressed("jump"))
+            {
+                _playerController.move_up = 1;
+            }
+            if (Input.IsActionJustReleased("jump"))
+            {
+                _playerController.move_up = -1;
+            }
+            _playerController.move_forward = 0;
+            if (Input.IsActionPressed("move_forward"))
+            {
+                _playerController.move_forward += 1;
+            }
+            if (Input.IsActionPressed("move_backward"))
+            {
+                _playerController.move_forward += -1;
+            }
+            _playerController.move_right = 0;
+            if (Input.IsActionPressed("move_right"))
+            {
+                _playerController.move_right += 1;
+            }
+            if (Input.IsActionPressed("move_left"))
+            {
+                _playerController.move_right += -1;
             }
         }
     }
@@ -706,26 +735,15 @@ public class Player : KinematicBody
 
     private void QueueJump()
     {
-        if (Input.IsActionJustPressed("jump") && !wishJump)
+        if (_playerController.move_up == 1 && !wishJump)
         {
             wishJump = true;
         }
-        if (Input.IsActionJustReleased("jump"))
+        if (_playerController.move_up == -1)
         {
             wishJump = false;
         }
     }
-
-    private void SetMovementDir()
-    {
-        _cmd.move_forward = 0f;
-        _cmd.move_right = 0f;
-        _cmd.move_forward += Input.IsActionPressed("move_forward") == true ? 1.0f : 0f;
-        _cmd.move_forward -= Input.IsActionPressed("move_backward") == true ? 1.0f : 0f;
-        _cmd.move_right += Input.IsActionPressed("move_right") == true ? 1.0f : 0f;
-        _cmd.move_right -= Input.IsActionPressed("move_left") == true ? 1.0f : 0f;
-    }
-
     private void AirMove(float delta)
     {
         Vector3 wishdir = new Vector3();
@@ -733,7 +751,6 @@ public class Player : KinematicBody
         float wishvel = airAcceleration;
         float accel;
         
-        SetMovementDir();
         float scale = CmdScale();
 
         wishdir += aim.x * _playerController.move_right;
@@ -832,7 +849,6 @@ public class Player : KinematicBody
             ApplyFriction(0, delta);
         }
 
-        SetMovementDir();
         float scale = CmdScale();
 
         wishDir += aim.x * _playerController.move_right;
