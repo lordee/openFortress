@@ -42,7 +42,6 @@ public class Network : Node
                 {
                     if (c.NetworkID != send.NetworkID)
                     {
-                        SnapShot ss = BuildSnapShot(send);
                         byte[] packet = BuildPacket(send);
 
                         udp.SendAsync(packet, packet.Length, c.IPAddress);
@@ -240,7 +239,9 @@ public class Network : Node
     private byte[] BuildPacket(OFConnection client)
     {
         byte[] packet = null;
+        
 
+        throw new NotImplementedException();
         // build packet
          
         // networkid
