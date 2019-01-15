@@ -30,7 +30,6 @@ public class Network : Node
 
     public override void _Ready()
     {
-        
     }
 
     public override void _Process(float delta)
@@ -41,10 +40,10 @@ public class Network : Node
             {
                 foreach(OFConnection send in connections)
                 {
-                    if (c != send)
+                    if (c.NetworkID != send.NetworkID)
                     {
                         SnapShot ss = BuildSnapShot(send);
-                        byte[] packet = BuildPacket(c.NetworkID);
+                        byte[] packet = BuildPacket(send);
 
                         udp.SendAsync(packet, packet.Length, c.IPAddress);
                     }
@@ -108,7 +107,7 @@ public class Network : Node
         socket.BeginReceive(new AsyncCallback(ReceivePacket), socket);
         string stringbytes = Encoding.ASCII.GetString(bytes);
 
-        //Console.WriteLine("Got '" + stringbytes + " from " + source);
+        Console.WriteLine("Got '" + stringbytes + " from " + source);
 
         string[] msgs = stringbytes.Split("\n");
 
@@ -172,63 +171,73 @@ public class Network : Node
                     int id = Convert.ToInt32(data);
                     if (connections.Any(c => c.NetworkID == id))
                     {
-                        OFConnection peer = connections.First(c => c.NetworkID == id);
-                        SnapShot ss = DecodePacket(msgs);
-                        if (ss.PacketNumber <= peer.AcknowledgedPacketNumber)
-                        {
-                            // data is old, stop inspecting packet
-                            return;
-                        }
-                        else
-                        {
-                            peer.AcknowledgedPacketNumber = ss.PacketNumber;
-                            // apply state and cmds etc
-                            throw new NotImplementedException();
-
-                            // if server, add cmds to player controller so that they get readded for transmission?
-                        }
+                        DecodePacket(msgs, id);
                     }
-                    return;
                 break;
             }
         }
     }
 
-    private SnapShot DecodePacket(string[] msgs)
+    private void DecodePacket(string[] msgs, int id)
     {
+        OFConnection peer = connections.First(c => c.NetworkID == id);
+        SnapShot ss = new SnapShot();
+        ss.PacketData = msgs;
+        Player p = null;
+
         for (int i = 0; i < msgs.Length; i++)
         {
             string type = msgs[i];
             i++;
             string data = msgs[i];
-            SnapShot ss = new SnapShot();
+            
             switch (type)
             {
                 case "packetNumber":
                     ss.PacketNumber = Convert.ToInt32(data);
+                    if (ss.PacketNumber <= peer.AcknowledgedPacketNumber)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        peer.AcknowledgedPacketNumber = ss.PacketNumber;
+                    }
                 break;
                 case "clientID":
                     ss.ClientID = Convert.ToInt32(data);
+                    p = (Player)GetNode("/root/openFortress/" + data);
+
+                    if (p == null)
+                    {
+                        // spawn a player
+                        throw new NotImplementedException();
+                    }
                 break;
                 case "transform":
-
+                    throw new NotImplementedException();
                 break;
                 case "velocity":
-
+                    throw new NotImplementedException();
                 break;
-                case "commands":
-
+                case "move_forward":
+                    throw new NotImplementedException();
+                break;
+                case "move_right":
+                    throw new NotImplementedException();
+                break;
+                case "impulses":
+                    int[] imps = data.Split(",").Select(Int32.Parse).ToArray();
+                    foreach (Impulse imp in imps)
+                    {
+                        p.PlayerController.Impulses.Add(imp);
+                    }
                 break;
             }
         }
     }
 
-    private SnapShot BuildSnapShot(OFConnection client)
-    {
-        
-    }
-
-    private byte[] BuildPacket(int clientID)
+    private byte[] BuildPacket(OFConnection client)
     {
         byte[] packet = null;
 
@@ -268,9 +277,7 @@ public struct SnapShot
 {
     public int PacketNumber;
     public int ClientID;
-    public Transform Transform;
-    public float Velocity;
-    public List<ClientCommands> Commands;
+    public string[] PacketData;
 }
 
 public enum ConnectionType
