@@ -22,10 +22,6 @@ class DiseasedData
 }
 public class Player : KinematicBody
 {
-    PlayerController _playerController = new PlayerController();
-    public PlayerController PlayerController {
-        get { return _playerController; }
-    }
     float mouseSensitivity = 0.2f;
     float cameraAngle = 0F;
 
@@ -126,7 +122,7 @@ public class Player : KinematicBody
     
    
     // Nodes
-    Spatial head;
+    Spatial _head;
     Camera camera;
     RayCast stairCatcher;
     Label HealthLabel;
@@ -140,6 +136,11 @@ public class Player : KinematicBody
             }
             return _crosshair;
         }
+    }
+
+    PlayerController _playerController = null;
+    public PlayerController PlayerController {
+        get { return _playerController; }
     }
 
     private Main _mainNode;
@@ -327,14 +328,15 @@ public class Player : KinematicBody
     {
         // Called every time the node is added to the scene.
         // Initialization here
-        head = (Spatial)GetNode("Head");
-        camera = (Camera)head.GetNode("Camera");
+        _head = (Spatial)GetNode("Head");
+        camera = (Camera)_head.GetNode("Camera");
         stairCatcher = (RayCast)GetNode("StairCatcher");
         HealthLabel = (Label)GetNode("/root/OpenFortress/Main/UI/HealthLabel");
         ArmourLabel = (Label)GetNode("/root/OpenFortress/Main/UI/ArmourLabel");
         cameraCenter.x = OS.GetWindowSize().x / 2;
         cameraCenter.y = OS.GetWindowSize().y / 2;
-        _playerController.Impulses = new List<Impulse>();
+        _playerController = (PlayerController)GetNode("PlayerController");
+        _playerController.Init(this);
 
         // enable ladders
         var ladders = GetTree().GetNodesInGroup("Ladders");
@@ -345,126 +347,52 @@ public class Player : KinematicBody
         }
     }
 
-    public override void _Input(InputEvent e)
+    public void RotateHead(float x, float y)
     {
-        // moving mouse
-        if (Input.GetMouseMode() == Input.MouseMode.Captured)
+        _head.RotateY(Mathf.Deg2Rad(x * mouseSensitivity));
+
+        // limit how far up/down we look
+        // invert mouse
+        float change = y * mouseSensitivity;
+        if (cameraAngle + change < 90F && cameraAngle + change > -90F)
         {
-            if (e is InputEventMouseMotion em)
-            {
-                if (em.Relative.Length() > 0)
-                {          
-                    head.RotateY(Mathf.Deg2Rad(-em.Relative.x * mouseSensitivity));
-
-                    // limit how far up/down we look
-                    // invert mouse
-                    float change = em.Relative.y * mouseSensitivity;
-                    if (cameraAngle + change < 90F && cameraAngle + change > -90F)
-                    {
-                        camera.RotateX(Mathf.Deg2Rad(change));
-                        cameraAngle += change;
-                    }
-                }
-            }
-
-            // is this best way to check actions?
-            if (Input.IsActionJustPressed("slot1")) 
-            {
-                _playerController.Impulses.Add(Impulse.Slot1);
-            } 
-            else if (Input.IsActionJustPressed("slot2"))
-            {
-                _playerController.Impulses.Add(Impulse.Slot2);
-                ActiveWeapon = this.Class.Weapon2;
-            }
-            else if (Input.IsActionJustPressed("slot3"))
-            {
-                _playerController.Impulses.Add(Impulse.Slot3);
-                ActiveWeapon = this.Class.Weapon3;
-            }
-            else if (Input.IsActionJustPressed("slot4"))
-            {
-                _playerController.Impulses.Add(Impulse.Slot4);
-                ActiveWeapon = this.Class.Weapon4;
-            }
-            if (Input.IsActionJustPressed("detpipe"))
-            {
-                _playerController.Impulses.Add(Impulse.Detpipe);
-                this.Detpipe();
-            }
-            if (Input.IsActionJustPressed("gren1"))
-            {
-                _playerController.Impulses.Add(Impulse.Gren1);
-            }
-            if (Input.IsActionJustPressed("gren2"))
-            {
-                _playerController.Impulses.Add(Impulse.Gren2);
-            }
-            if (Input.IsActionPressed("attack"))
-            {
-                _playerController.Impulses.Add(Impulse.Attack);
-            }
-            if (Input.IsActionJustPressed("jump"))
-            {
-                _playerController.move_up = 1;
-            }
-            if (Input.IsActionJustReleased("jump"))
-            {
-                _playerController.move_up = -1;
-            }
-            _playerController.move_forward = 0;
-            if (Input.IsActionPressed("move_forward"))
-            {
-                _playerController.move_forward += 1;
-            }
-            if (Input.IsActionPressed("move_backward"))
-            {
-                _playerController.move_forward += -1;
-            }
-            _playerController.move_right = 0;
-            if (Input.IsActionPressed("move_right"))
-            {
-                _playerController.move_right += 1;
-            }
-            if (Input.IsActionPressed("move_left"))
-            {
-                _playerController.move_right += -1;
-            }
+            camera.RotateX(Mathf.Deg2Rad(change));
+            cameraAngle += change;
         }
     }
 
     public override void _PhysicsProcess(float delta)
     {
+        TimeSinceTranquilised += delta;
+        foreach (DiseasedData dd in _diseasedBy)
+        {
+            dd.TimeSinceDiseased += delta;
+            if (dd.TimeSinceDiseased >= _diseasedInterval)
+            {
+                this.TakeDamage(this.Transform, dd.Inflictor.GetType().ToString().ToLower(), dd.Inflictor.InflictLength, dd.Attacker, dd.Inflictor.Damage);
+            }
+        }
+        
+        TimeSinceConcussed += delta;
+        if (Concussed)
+        {
+            // if crosshair within percentage of final destination, set new coords
+            if (Math.Abs(_concussionCrosshairDestination.x - Crosshair.Position.x) < 10 
+                && Math.Abs(_concussionCrosshairDestination.y - Crosshair.Position.y) < 10)
+                {
+                    _concussionCrosshairDestination = GetConcussionCrosshairDestination(true);
+                }
+            
+            // move crosshair towards coords (change this later to an arc that changes constantly)
+            Vector2 targ = (Crosshair.Position - _concussionCrosshairDestination).Normalized();
+
+            Vector2 motion = targ * 50 * delta;
+
+            Crosshair.Position -= motion;
+        }
+        
         if (Input.GetMouseMode() == Input.MouseMode.Captured)
         {
-            TimeSinceTranquilised += delta;
-            foreach (DiseasedData dd in _diseasedBy)
-            {
-                dd.TimeSinceDiseased += delta;
-                if (dd.TimeSinceDiseased >= _diseasedInterval)
-                {
-                    this.TakeDamage(this.Transform, dd.Inflictor.GetType().ToString().ToLower(), dd.Inflictor.InflictLength, dd.Attacker, dd.Inflictor.Damage);
-                }
-            }
-            
-            TimeSinceConcussed += delta;
-            if (Concussed)
-            {
-                // if crosshair within percentage of final destination, set new coords
-                if (Math.Abs(_concussionCrosshairDestination.x - Crosshair.Position.x) < 10 
-                    && Math.Abs(_concussionCrosshairDestination.y - Crosshair.Position.y) < 10)
-                    {
-                        _concussionCrosshairDestination = GetConcussionCrosshairDestination(true);
-                    }
-                
-                // move crosshair towards coords (change this later to an arc that changes constantly)
-                Vector2 targ = (Crosshair.Position - _concussionCrosshairDestination).Normalized();
-
-                Vector2 motion = targ * 50 * delta;
-
-                Crosshair.Position -= motion;
-            }
-
             // process inputs -- should this be in normal process instead of physics process?
             foreach (Impulse imp in _playerController.Impulses)
             {

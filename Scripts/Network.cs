@@ -220,10 +220,10 @@ public class Network : Node
                     throw new NotImplementedException();
                 break;
                 case "move_forward":
-                    throw new NotImplementedException();
+                    p.PlayerController.move_forward = (float)Convert.ToInt16(data);
                 break;
                 case "move_right":
-                    throw new NotImplementedException();
+                    p.PlayerController.move_right = (float)Convert.ToInt16(data);
                 break;
                 case "impulses":
                     int[] imps = data.Split(",").Select(Int32.Parse).ToArray();
