@@ -214,7 +214,14 @@ public class Network : Node
                     }
                 break;
                 case "transform":
-                    throw new NotImplementedException();
+                    float[] vecs = data.Split(",").Select(float.Parse).ToArray();
+                    Vector3 x = new Vector3(vecs[0], vecs[1], vecs[2]);
+                    Vector3 y = new Vector3(vecs[3], vecs[4], vecs[5]);
+                    Vector3 z = new Vector3(vecs[6], vecs[7], vecs[8]);
+                    Vector3 org = new Vector3(vecs[9], vecs[10], vecs[11]);
+
+                    // for now find player and apply, later we need to put on all ents
+                    p.Transform = new Transform(x, y, z, org);
                 break;
                 case "velocity":
                     throw new NotImplementedException();

@@ -99,7 +99,6 @@ public class PlayerController : Node
             }
         }
     }
-
 }
 
 public enum Impulse
