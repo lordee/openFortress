@@ -36,19 +36,17 @@ public class Network : Node
     {
         if (Active)
         {
-            foreach(OFConnection c in connections)
+            foreach(OFConnection receiver in connections)
             {
                 foreach(OFConnection send in connections)
                 {
-                    if (c.NetworkID != send.NetworkID)
+                    if (this.ConnType == ConnectionType.Server || receiver.NetworkID != send.NetworkID)
                     {
                         byte[] packet = BuildPacket(send);
 
-                        udp.SendAsync(packet, packet.Length, c.IPAddress);
+                        udp.SendAsync(packet, packet.Length, receiver.IPAddress);
                     }
                 }
-                
-                
 
                 // timeout on connections needed
                 throw new NotImplementedException();
@@ -155,6 +153,10 @@ public class Network : Node
                             {
                                 Tuple<int, IPEndPoint> t = challenges.First(e => e.Item1 == clientID && e.Item2 == source);
                                 connections.Add(new OFConnection(t.Item1, t.Item2));
+
+                                throw new NotImplementedException();
+                                // send client initial state for themselves (location of spawn etc)
+
                                 // client will now sync through normal send/receive of packets
                             }
                             challenges.RemoveAll(e => e.Item1 == clientID);
@@ -221,7 +223,7 @@ public class Network : Node
                     Vector3 org = new Vector3(vecs[9], vecs[10], vecs[11]);
 
                     // for now find player and apply, later we need to put on all ents
-                    p.Transform = new Transform(x, y, z, org);
+                    p.PlayerController.Transform = new Transform(x, y, z, org);
                 break;
                 case "velocity":
                     throw new NotImplementedException();

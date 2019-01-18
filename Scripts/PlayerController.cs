@@ -11,6 +11,10 @@ public class PlayerController : Node
     public List<Impulse> Impulses = new List<Impulse>();
     Player _player = null;
 
+    public Transform Transform = new Transform();
+
+    public bool PlayerControlled = false;
+
     public PlayerController()
     {
         
@@ -27,7 +31,7 @@ public class PlayerController : Node
     public override void _Input(InputEvent e)
     {
         // moving mouse
-        if (Input.GetMouseMode() == Input.MouseMode.Captured)
+        if (PlayerControlled && Input.GetMouseMode() == Input.MouseMode.Captured)
         {
             if (e is InputEventMouseMotion em)
             {

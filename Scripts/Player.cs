@@ -154,6 +154,17 @@ public class Player : KinematicBody
         }
     }
 
+    private Network _network;
+    public Network Network {
+        get {
+            if (_network == null)
+            {
+                _network = (Network)GetNode("/root/OpenFortress/Network");
+            }
+            return _network;
+        }
+    }
+
     // state
     private int _teamID = 9;
     public int TeamID { 
@@ -447,6 +458,24 @@ public class Player : KinematicBody
                 }
             }
             _playerController.Impulses.Clear();
+
+            _playerController.Transform = this.Transform;
+            throw new NotImplementedException();
+            // if controlling client, send your transform
+            if ()
+            {
+
+            }
+            // if other player, check for transform updates
+            else 
+            {
+                if (_playerController.Transform != new Transform())
+                {
+                    // TODO should probably check how far they are from each other and rubber band instead of straight apply
+                    this.Transform = _playerController.Transform;
+                    _playerController.Transform = new Transform();
+                }
+            }
             
             if (ActiveWeapon != null)
             {
@@ -464,7 +493,7 @@ public class Player : KinematicBody
             }
             
             playerVelocity = this.MoveAndSlide(playerVelocity, up);
-            touchingGround = IsOnFloor();     
+            touchingGround = IsOnFloor();
             float speed = playerVelocity.Length();
             //GD.Print("Speed: " + speed.ToString());
         }
