@@ -70,16 +70,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scripts\Main.cs" />
     <Compile Include="Scripts\Player.cs" />
+    <Compile Include="Scripts\PlayerController.cs" />
     <Compile Include="Scripts\Rocket.cs" />
     <Compile Include="Scripts\Projectile.cs" />
     <Compile Include="Scripts\TeamMenu.cs" />
     <Compile Include="Scripts\Weapons.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="\home\danni\Code\LibBSP\LibBSP\LibBSP.csproj">
-      <Project>{33e4ffca-8d0b-4089-afd2-527547531578}</Project>
-      <Name>LibBSP</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

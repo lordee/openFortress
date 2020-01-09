@@ -23,7 +23,7 @@ public class ConcussionGrenade : HandGrenade
 
     override public void Explode(float val)
     {
-        object[] result = this.FindPlayersInRadius();
+        Godot.Collections.Array result = this.FindPlayersInRadius();
 
         foreach (Dictionary<object, object>  r in result) {
             if (r["collider"] is Player pl)

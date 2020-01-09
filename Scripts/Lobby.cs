@@ -135,8 +135,9 @@ public class Lobby : Control
     {
         LineEdit add = (LineEdit)GetNode("panel/address");
         string ip = add.Text;
+        System.Net.IPAddress IPadd;
 
-        if (!ip.IsValidIpAddress())
+        if (!System.Net.IPAddress.TryParse(ip, out IPadd))
         {
             _Set_Status("IP address is invalid", false);
             return;

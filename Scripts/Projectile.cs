@@ -92,8 +92,8 @@ public class Projectile : KinematicBody
         par.SetShapeRid(s.GetRid());
         par.Transform = this.Transform;
         
-        object[] result = state.IntersectShape(par);
-        foreach (Dictionary<object, object>  r in result) {
+        Godot.Collections.Array result = state.IntersectShape(par);
+        foreach (Dictionary<object, object> r in result) {
             if (r["collider"] is Player pl)
             {
                 GD.Print("found player");

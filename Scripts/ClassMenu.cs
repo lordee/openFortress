@@ -13,7 +13,7 @@ public class ClassMenu : VBoxContainer
         var buttons = GetTree().GetNodesInGroup("classbutton");
         foreach (Button b in buttons)
         {
-            b.Connect("pressed", this, "_on_Button_Pressed", new object[] { b, nodeName });
+            b.Connect("pressed", this, "_on_Button_Pressed", new Godot.Collections.Array { b, nodeName });
         }
     }
 

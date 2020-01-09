@@ -320,7 +320,7 @@ abstract public class Weapon : MeshInstance
     private Tuple<Vector3, PuffType, Node, KinematicBody, float> DoHit(PhysicsDirectSpaceState spaceState, Vector3 shootOrigin, Vector3 shootTo, Player shooter)
     {
         Tuple<Vector3, PuffType, Node, KinematicBody, float> hitData = null;
-        Dictionary<object, object> res = spaceState.IntersectRay(shootOrigin, shootTo, new object[] { this, shooter }, 1);
+        Godot.Collections.Dictionary res = spaceState.IntersectRay(shootOrigin, shootTo, new Godot.Collections.Array { this, shooter }, 1);
         if (res.Count > 0)
         {
             Vector3 pos = (Vector3)res["position"];

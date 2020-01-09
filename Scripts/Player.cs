@@ -460,7 +460,7 @@ public class Player : KinematicBody
             _playerController.Impulses.Clear();
 
             _playerController.Transform = this.Transform;
-            throw new NotImplementedException();
+            /*throw new NotImplementedException();
             // if controlling client, send your transform
             if ()
             {
@@ -475,7 +475,7 @@ public class Player : KinematicBody
                     this.Transform = _playerController.Transform;
                     _playerController.Transform = new Transform();
                 }
-            }
+            }*/
             
             if (ActiveWeapon != null)
             {

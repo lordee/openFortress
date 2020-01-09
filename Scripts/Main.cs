@@ -3,8 +3,8 @@ using System;
 
 public class Main : Node
 {
-    private object[] spawnsTeam1;
-    private object[] spawnsTeam2;
+    private Godot.Collections.Array spawnsTeam1;
+    private Godot.Collections.Array spawnsTeam2;
     private int currentSpawnTeam1 = 0;
     private int currentSpawnTeam2 = 0;
     Network _network;
@@ -54,7 +54,7 @@ public class Main : Node
             {
                 case 1:
                     
-                    if (spawnsTeam1.Length >= currentSpawnTeam1)
+                    if (spawnsTeam1.Count >= currentSpawnTeam1)
                     {
                         currentSpawnTeam1 = 0;
                     }
@@ -63,7 +63,7 @@ public class Main : Node
                 break;
                 case 2:
                     
-                    if (spawnsTeam2.Length >= currentSpawnTeam2)
+                    if (spawnsTeam2.Count >= currentSpawnTeam2)
                     {
                         currentSpawnTeam2 = 0;
                     }

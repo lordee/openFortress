@@ -22,7 +22,7 @@ public class EMPGrenade : HandGrenade
     override public void Explode(float val)
     {
         // any players nearby
-        object[] result = this.FindPlayersInRadius();
+        Godot.Collections.Array result = this.FindPlayersInRadius();
 
         foreach (Dictionary<object, object>  r in result) {
             if (r["collider"] is Player pl)

@@ -104,7 +104,7 @@ abstract public class HandGrenade : KinematicBody
 
     virtual public void Explode(float val)
     {       
-        object[] result = this.FindPlayersInRadius();
+        Godot.Collections.Array result = this.FindPlayersInRadius();
 
         foreach (Dictionary<object, object>  r in result) {
             if (r["collider"] is Player pl)
@@ -136,7 +136,7 @@ abstract public class HandGrenade : KinematicBody
         GetTree().QueueDelete(this);
     }
 
-    protected object[] FindPlayersInRadius()
+    protected Godot.Collections.Array FindPlayersInRadius()
     {
         SphereShape s = new SphereShape();
         s.SetRadius(_areaOfEffectRadius);
@@ -150,7 +150,7 @@ abstract public class HandGrenade : KinematicBody
         par.SetShapeRid(s.GetRid());
         par.Transform = this.Transform;
         
-        object[] result = state.IntersectShape(par);
+        Godot.Collections.Array result = state.IntersectShape(par);
 
         return result;
     }
